@@ -1,0 +1,395 @@
+article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, section {
+    display: block;
+}
+
+html, body {
+    width: 100%;
+    /*height: 100%;*/
+    margin: 0px;
+    padding: 0px;
+    overflow-x: hidden;
+    background-color: #ffffff;
+}
+
+p {
+    font-size: 1.6em;
+    color: #333;
+    margin: 0 0 1em;
+    padding: 0;
+    text-align: justify;
+}
+
+/*.origin-plane {
+    float: right;
+}*/
+.origin p {
+    text-align: center;
+}
+
+.bot-page {
+    text-align: center;
+}
+
+.carousel-control.left {
+    background-image: linear-gradient(to right, rgba(0, 0, 0, 0) 0, rgba(0, 0, 0, .0001) 100%);
+}
+
+.carousel-control.right {
+    background-image: linear-gradient(to right, rgba(0, 0, 0, 0) 0, rgba(0, 0, 0, .0001) 100%);
+}
+
+.carousel-inner {
+
+    text-align: center;
+
+}
+
+.quote h1, .quote h2 {
+    display: inline-block;
+    margin-top: 1em;
+    padding: 10px 10px 10px;
+    background: rgba(33, 33, 33, .7);
+    position: relative;
+    color: white;
+    clear: both;
+}
+
+.slideshow {
+    padding-top: 3em;
+    width: 24%;
+    display: inline-block;
+}
+
+.carousel-inner h1 {
+    font-size: 9em;
+    width: 100%;
+    margin-left: -50%;
+    display: inline-block;
+    margin-top: 3.8em;
+    padding: 10px 10px 10px;
+    background: rgba(33, 33, 33, .7);
+    position: absolute;
+    color: white;
+    clear: both;
+}
+
+.slideshow h3 {
+    text-align: center;
+    width: 12.1%;
+    display: inline-block;
+    margin-top: 1em;
+    padding: 10px 10px 10px;
+    background: rgba(33, 33, 33, .7);
+    position: absolute;
+    color: white;
+    clear: both;
+}
+
+.bot-page h2 {
+    text-align: center;
+    font-size: 4em;
+    font-weight: 300;
+    text-transform: uppercase;
+    color: #212121;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.7);
+    position: relative;
+    margin: 40px 0 20px;
+    padding: 0 30px;
+    clear: both;
+}
+
+/*.bio h2::before {*/
+/*content: '';*/
+/*height: 1px;*/
+/*width: 100%;*/
+/*background: #bdbdbd;*/
+/*position: absolute;*/
+/*z-index: 0;*/
+/*left: 0;*/
+/*top: 50%;*/
+/*margin-top: -1px;*/
+/*}*/
+
+.spacer {
+    width: 100%;
+    height: 25em;
+}
+
+header.siteheader {
+    display: inline-block;
+    margin: auto;
+}
+
+header.siteheader img {
+    width: 100%;
+    max-width: 1920px;
+    background-size: 100%;
+    text-align: center;
+    font-size: 26px;
+    position: fixed;
+}
+
+.error-pic {
+    height: 100vh;
+    width: 100%;
+    max-width: 1920px;
+    background: linear-gradient(
+            rgba(0, 0, 0, 0.75),
+            rgba(0, 0, 0, 0.75)
+    ), url(../images/error.gif) repeat-x center top fixed;
+    background-size: 100%;
+    text-align: center;
+    padding: 2% 0;
+    font-size: 26px;
+    webkit-box-shadow: 0px 6px 0px #E4E4E4;
+    moz-box-shadow: 0px 6px 0px #E4E4E4;
+    box-shadow: 0px 6px 0px #E4E4E4;
+    position: fixed;
+}
+
+.error {
+    text-align: center;
+    color: aliceblue;
+    padding-top: 20%;
+    position: relative;
+    font-size: 5em;
+    margin-bottom: 5%;
+}
+
+.error h1, .error h2 {
+    /*margin-bottom: 5%;*/
+    display: inline-block;
+    background: rgba(255, 255, 255, 0);;
+    margin: auto;
+}
+
+.error {
+    /*margin-bottom: 5%;*/
+    display: inline-block;
+    margin: auto;
+}
+
+.error-btn {
+    margin: auto;
+    display: block;
+}
+
+.row {
+    padding-top: 80px;
+}
+
+.carousel-inner > .item > img,
+.carousel-inner > .item > a > img {
+    /*padding-top: 20px;*/
+    width: 100%;
+    height: auto;
+    /*margin: auto;*/
+}
+
+.icara {
+    /*padding-top: 50%;*/
+    background: white;
+    z-index: 100;
+}
+
+/* Large Devices, Wide Screens */
+@media only screen and (max-width: 1200px) {
+
+}
+
+/* Medium Devices, Desktops */
+@media only screen and (max-width: 992px) {
+    .fix-me {
+        margin-left: -4.8em !important;
+
+    }
+
+    .carousel-inner h1 {
+        margin-top: 1.8em;
+    }
+
+    .spacer {
+        height: 3em;
+    }
+
+    .slideshow {
+        width: 33%;
+    }
+
+    .slideshow h3 {
+        margin-left: 1.9em;
+        width: 23%;
+    }
+
+    .img-responsive {
+        display: block;
+        margin: auto;
+    }
+
+}
+
+/* Small Devices, Tablets */
+@media only screen and (max-width: 768px) {
+    .fix-me {
+        margin-left: -4.8em !important;
+
+    }
+
+    .carousel-inner h1 {
+        margin-top: 1.15em;
+    }
+
+    .spacer {
+        height: 3em;
+    }
+
+    .slideshow {
+        width: 33%;
+    }
+
+    .slideshow h3 {
+        margin-left: 1.9em;
+        width: 30%;
+    }
+
+    .img-responsive {
+        display: block;
+        margin: auto;
+    }
+
+    .mobile {
+        margin-right: 10% !important;
+    }
+
+    .margin-left {
+        margin-left: 0% !important;
+    }
+
+}
+
+/* Extra Small Devices, Phones */
+@media only screen and (max-width: 480px) {
+    .fix-me {
+        width: 28% !important;
+    }
+
+    .row {
+        padding-top: 0;
+    }
+
+    .shrinked {
+
+        max-width: 95%;
+
+    }
+
+    .carousel-inner h1 {
+        margin-top: 4.2em;
+        font-size: 2em;
+    }
+
+    .spacer {
+        height: 3em;
+    }
+
+    .slideshow {
+        width: 31%;
+        vertical-align: top;
+    }
+
+    .quote h1, .quote h2 {
+        font-size: 1em;
+    }
+
+    .bot-page h2 {
+        font-size: 1em;
+    }
+
+    p {
+        font-size: 1em;
+    }
+
+    .slideshow h3 {
+        font-size: 1em;
+        margin-left: 0;
+        width: 29.5%;
+    }
+
+    .img-responsive {
+        display: block;
+        margin: auto;
+    }
+
+    .mobile {
+        margin-right: 10% !important;
+    }
+
+    .margin-left {
+        margin-left: 10% !important;
+    }
+}
+
+/* Custom, iPhone Retina */
+@media only screen and (max-width: 320px) {
+    .fix-me {
+        margin-left: -3em !important;
+        width: 26% !important;
+    }
+
+    .row {
+        padding-top: 0;
+    }
+
+    .shrinked {
+
+        max-width: 95%;
+
+    }
+
+    .carousel-inner h1 {
+        margin-top: 2.4em;
+        font-size: 2em;
+
+    }
+
+    .spacer {
+        height: 3em;
+    }
+
+    .slideshow {
+        width: 31%;
+        vertical-align: top;
+    }
+
+    .quote h1, .quote h2 {
+        font-size: 1em;
+    }
+
+    .bot-page h2 {
+        font-size: 1em;
+    }
+
+    p {
+        font-size: 1em;
+    }
+
+    .slideshow h3 {
+        font-size: 1em;
+        margin-left: 0;
+        width: 29.5%;
+    }
+
+    .img-responsive {
+        display: block;
+        margin: auto;
+    }
+
+    .mobile {
+        margin-right: 10% !important;
+    }
+
+    .margin-left {
+        margin-left: 10% !important;
+    }
+}

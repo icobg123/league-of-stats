@@ -1,0 +1,22 @@
+{% extends "header.html" %}
+{% block content %}
+<header class="siteheader clearfix ">
+    <!--<img src="../static/images/{{planeswalker.Image}}.gif">-->
+</header>
+<div class="spacer error-pic">&nbsp;
+</div>
+<div class="container">
+    <div class="error">
+
+        <h1>{{planeswalker.ErrorNumb}}</h1><br>
+        <h2>{{planeswalker.Info}}</h2>
+        <a href="/">
+            <button type="button" class="error-btn btn btn-secondary">Home
+                Page
+            </button>
+        </a>
+    </div>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,61 @@
+{% extends "header.html" %}
+{% block content %}
+
+    <!--<div class="home"><h1>{{slideshow}} </h1></div>-->
+    <div id="myCarousel" class="carousel slide" data-ride="carousel">
+
+        <ol class="carousel-indicators">
+            {% for image_name in slideshow %}
+            {% if loop.index == 1 %}
+            <li data-target="#myCarousel" data-slide-to="0" class="active"></li>
+            {% endif %}
+            {% if loop.index >= 2 %}
+            <li data-target="#myCarousel" data-slide-to="{{loop.index-1}}"></li>
+            {% endif %}
+            {% endfor %}
+
+        </ol>
+
+        <div class="carousel-inner" role="listbox">
+
+
+            <div class="item active"><h1>Ajani</h1>
+                <img
+                        src="{{ url_for('static', filename = 'images/backgrounds/ajani.jpg') }}">
+            </div>
+            {% for image_name in slideshow %}
+            <div class="item "><a href="/planeswalkers/{{image_name[:-4]}}"><h1>
+                {{image_name[:-4].title()}}</h1></a>
+
+                <img
+                        src=" {{url_for('send_bg_images', filename=image_name)}}">
+            </div>
+            {% endfor %}
+        </div>
+
+        <a class="left carousel-control" href="#myCarousel" role="button"
+           data-slide="prev">
+            <span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>
+            <span class="sr-only">Previous</span>
+        </a>
+        <a class="right carousel-control" href="#myCarousel" role="button"
+           data-slide="next">
+            <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
+            <span class="sr-only">Next</span>
+        </a>
+    </div>
+    <div class="container">
+        <div class="bot-page">
+            <h2><span>A Legendary Story</span></h2>
+            <p>
+                {{planeswalker.StoryP1}}
+            </p>
+            <p>
+                {{planeswalker.StoryP2}}
+            </p>
+
+        </div>
+
+    </div>
+
+{% endblock %}
