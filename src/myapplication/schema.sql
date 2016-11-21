@@ -14,7 +14,7 @@ CREATE TABLE message (
   date       INTEGER
 );
 
-DROP TABLE IF EXISTS user;
+DROP TABLE IF EXISTS summoner;
 CREATE TABLE summoner (
   summonerDBid  INTEGER PRIMARY KEY AUTOINCREMENT,
   summonerName TEXT NOT NULL,
