@@ -1,0 +1,61 @@
+<div class="signup">
+    <h2>Sign Up</h2>
+    {% if err %}
+    <div class="err"><strong>Error:</strong> {{ err }}</div>
+    {% endif %}
+    <form class="form-horizontal" action='' method="post">
+        <fieldset>
+            <div class="control-group">
+                <!-- Username -->
+                <label class="control-label" for="username">Username</label>
+                <div class="controls">
+                    <input type="text" name="summonerName"
+                           value="{{ request.form.summonerName }}">
+                    <p class="help-block">Username can contain any letters or numbers</p>
+                </div>
+            </div>
+
+
+            <div class="form-group">
+                <label for="sel1">Select list:</label>
+                <select class="form-control" id="sel1" name="region">
+                    <option value="{{request.form.region}}">EUNE</option>
+                    <option value="{{request.form.region}}">EUW</option>
+                    <option value="{{request.form.region}}">NA</option>
+                </select>
+
+            </div>
+
+            <div class="control-group">
+                <!-- E-mail -->
+                <label class="control-label" for="email">E-mail</label>
+                <div class="controls">
+                    <input type="text" name="email" value="{{ request.form.email }}">
+                    <p class="help-block">Please provide your E-mail</p>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <!-- Password-->
+                <label class="control-label" for="password">Password</label>
+                <div class="controls">
+                    <input type="password" name="password">
+                    <p class="help-block">Please provide your password</p>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <!-- Password2 -->
+                <label class="control-label" for="password_confirm">Password
+                    (Confirm)</label>
+                <div class="controls">
+                    <input type="password" name="password2">
+                    <p class="help-block">Please confirm password</p>
+                </div>
+            </div>
+            <div class="actions"><input type="submit" value="Sign Up"></div>
+
+        </fieldset>
+</div>
+</form>
+</div>
