@@ -1,33 +1,94 @@
-from flask import Flask
+# -*- coding: utf-8 -*-
+import sys
+import json
+import ConfigParser
+from flask import Flask, render_template, url_for, redirect, request, send_from_directory, \
+    abort, \
+    g, \
+    flash, session
+from random import shuffle
+from riotwatcher import RiotWatcher, EUROPE_NORDIC_EAST
+from cassiopeia import riotapi
+from cassiopeia.type.core.common import LoadPolicy
+
 from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
 app.config[
-    'SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://mewtwo123:killer123@localhost/league_of_legends'
+    'SQLALCHEMY_DATABASE_URI'] = 'sqlite:////home/tc/CW2/src/myapplication/var/league_of_legends.db'
 
 db = SQLAlchemy(app)
 
+dblocation = 'var/sqlite3.db'
+riotapi.set_region("EUNE")
 
-class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80), unique=True)
-    email = db.Column(db.String(120), unique=True)
+riotapi.print_calls(True)
 
-    def __init__(self, username, email):
-        self.username = username
-        self.email = email
+riotapi.set_api_key('23da5b32-c763-41ed-8d7a-f2b1023d8174')
+riotapi.set_load_policy(LoadPolicy.lazy)
+
+
+class summoners(db.Model):
+    id = db.Column(db.Integer, primary_key=True, default=lambda: uuid.uuid4().hex)
+    summonername = db.Column(db.Unicode(50), unique=True)
+    summonerID = db.Column(db.Integer, unique=True)
+
+    def __init__(self, id, summonername, summonerID):
+        self.id = id
+        self.summonername = summonername
+        self.summonerID = summonerID
 
     def __repr__(self):
-        return '<User %r>' % self.username
+        return '< ID %r with summonerName %s and summonerID %s>' % (
+            self.id, self.summonername, self.summonerID)
 
-admin = User('admin', 'admin@example.com')
 
-db.create_all() # In case user table doesn't exists already. Else remove it.
+db.drop_all()
+db.create_all()
 
-db.session.add(admin)
 
-db.session.commit() # This is needed to write the changes to database
+def init(app):
+    config = ConfigParser.ConfigParser()
+    config_location = "etc/config.cfg"
+    try:
+        config.read(config_location)
 
-User.query.all()
+        app.config['DEBUG'] = config.get("config", "debug")
+        app.config['ip_address'] = config.get("config", "ip_address")
+        app.config['port'] = config.get("config", "port")
+        app.config['url'] = config.get("config", "url")
+        app.secret_key = os.urandom(24)
+        app.permanent_session_lifetime = timedelta(seconds=60)
 
-User.query.filter_by(username='admin').first()
+    except:
+        print ('Could not read config: '), config_location
+
+
+@app.route('/summoner/<sumName>')
+def summoner(sumName):
+    username = riotapi.get_summoner_by_name(sumName)
+
+    exists = db.session.query(summoners.summonerID).filter_by(
+        summonername=username.name).scalar() is not None
+    alreadyThere = ''
+    if exists is False:
+        addNewSumomner = summoners(id=3222, summonername=username.name,
+                                   summonerID=username.id)
+        app.logger.info(summoners.id)
+
+        db.session.add(addNewSumomner)
+        db.session.commit()
+        app.logger.info(summoners.id)  # increment the primary id
+    else:
+        alreadyThere = 'They are there'
+
+    
+    return render_template('testhome.html', summoner=username, alreadyThere=alreadyThere)
+
+
+if __name__ == '__main__':
+    init(app)
+    app.run(
+        host=app.config['ip_address'],
+        port=int(app.config['port'])
+    )

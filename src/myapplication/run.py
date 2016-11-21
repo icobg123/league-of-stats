@@ -33,7 +33,10 @@ class summoners(db.Model):
         self.summonerID = summonerID
 
     def __repr__(self):
-        return '< ID %r with summonerName %s>' % (self.id, self.summonername)
+        return '< ID %r with summonerName %s and summonerID %s>' % (
+            self.id, self.summonername, self.summonerID)
+
+
 
 
 def init(app):
@@ -173,39 +176,6 @@ def summoner(sumName):
     return render_template('testhome.html', summoner=username, champions=champions,
                            match=match1, championName=championName,
                            masteryscore=masteryStats)
-
-
-#
-# @app.route('/summoner/<sumName>')
-# def summoner(sumName):
-#     # images_names = os.listdir('myapplication/static/images/planes')
-#     # planeswalkerNames = planeswalker_dict.keys()
-#
-#     username = w.get_summoner(name=sumName, region=EUROPE_NORDIC_EAST)
-#     rankedstats = w.get_ranked_stats(username['id'], EUROPE_NORDIC_EAST)
-#     championIds = w.static_get_champion_list()
-#     runes = w.get_rune_pages(username['id'], EUROPE_NORDIC_EAST)
-#     # my_ranked_stats_last_season = w.get_ranked_stats(me['id'], season=3)
-#     # print (username)
-#     return render_template('testhome.html', summoner=username, rankedstats=rankedstats,
-#                            champions=championIds, runes=runes)
-#     #
-#     # if sumName in planeswalkerNames:
-#     #     sumName = planeswalkerData.get(sumName)
-#     #     return render_template('planeswalker.html', planeswalker=sumName,
-#     #                            images_names=images_names)
-#     # else:
-#     #     return abort(404)
-
-
-@app.route('/../static/images/walkers/<filename>')
-def send_image(filename):
-    return send_from_directory("images", filename)
-
-
-@app.route('/../static/images/backgrounds/<filename>')
-def send_bg_images(filename):
-    return send_from_directory("images", filename)
 
 
 if __name__ == '__main__':
