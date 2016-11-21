@@ -31,19 +31,21 @@ riotapi.set_load_policy(LoadPolicy.lazy)
 class summoners(db.Model):
     id = db.Column(db.Integer, primary_key=True, default=lambda: uuid.uuid4().hex)
     summonername = db.Column(db.Unicode(50), unique=True)
-    summonerID = db.Column(db.Integer, unique=True)
 
-    def __init__(self, id, summonername, summonerID):
+    # summonerID = db.Column(db.Integer, unique=True)
+
+    # def __init__(self, id, summonername, summonerID):
+    def __init__(self, id, summonername):
         self.id = id
         self.summonername = summonername
-        self.summonerID = summonerID
+        # self.summonerID = summonerID
 
     def __repr__(self):
-        return '< ID %r with summonerName %s and summonerID %s>' % (
-            self.id, self.summonername, self.summonerID)
+        return ' %s' % (
+            self.summonername)
 
 
-db.drop_all()
+# db.drop_all()
 db.create_all()
 
 
@@ -68,22 +70,37 @@ def init(app):
 def summoner(sumName):
     username = riotapi.get_summoner_by_name(sumName)
 
-    exists = db.session.query(summoners.summonerID).filter_by(
+    exists = db.session.query(summoners.id).filter_by(
         summonername=username.name).scalar() is not None
     alreadyThere = ''
+    summonerData = []
     if exists is False:
-        addNewSumomner = summoners(id=3222, summonername=username.name,
-                                   summonerID=username.id)
+        addNewSumomner = summoners(id=username.id, summonername=username.name)
+
         app.logger.info(summoners.id)
 
         db.session.add(addNewSumomner)
         db.session.commit()
         app.logger.info(summoners.id)  # increment the primary id
+
+        # summonerData = [u.__dict__ for u in db.session.query(summoners).all()]
+        summonerData = dict(
+            (row.id, row)
+            for row in db.session.query(summoners).filter(summoners.id == username.id)
+        )
+
     else:
         alreadyThere = 'They are there'
 
-    
-    return render_template('testhome.html', summoner=username, alreadyThere=alreadyThere)
+        summonerData = dict(
+            (row.id, row)
+            for row in db.session.query(summoners).filter_by(
+                summonername=username.name)
+        )
+
+    return render_template('testhome.html', summoner=username,
+                           alreadyThere=alreadyThere,
+                           summonerData=summonerData)
 
 
 if __name__ == '__main__':

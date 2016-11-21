@@ -1,6 +1,33 @@
 <div class="container">
     <div class="bot-page">
         <h2><span>A Legendary Story</span></h2>
+
+
+        <p>{{alreadyThere}}
+        <hr>
+        <p>{{summonerData}}
+        <hr>
+        <hr>
+        <hr>
+        {% for summonerData in summonerData %}
+        {{summonerData.id}}
+        {{summonerData.summonername}}
+        {% endfor %}
+        <hr>
+        {% for key, value in summonerData.iteritems() %}
+        {{ key }}<p>icara</p>
+        {{ value }}
+        {% endfor %}
+        <hr>
+        <hr>
+        <hr>
+        <hr>
+        <hr>
+
+
+        </p>
+
+
         <p>
             {{summoner.name}}
         <hr>
