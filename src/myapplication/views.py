@@ -5,12 +5,24 @@ reload(sys)
 sys.setdefaultencoding("utf-8")
 import os
 import json
+
 from myapplication import app
 from flask import render_template, url_for, redirect, send_from_directory, abort
 from random import shuffle
 from riotwatcher import RiotWatcher, EUROPE_NORDIC_EAST
 from cassiopeia import riotapi
+from cassiopeia.type.core.common import LoadPolicy
+from collections import namedtuple
+
 w = RiotWatcher('23da5b32-c763-41ed-8d7a-f2b1023d8174')
+
+# os.environ["DEV_KEY"] = "23da5b32-c763-41ed-8d7a-f2b1023d8174"
+riotapi.set_region("EUNE")
+
+riotapi.print_calls(True)
+
+riotapi.set_api_key('23da5b32-c763-41ed-8d7a-f2b1023d8174')
+riotapi.set_load_policy(LoadPolicy.lazy)
 
 # Reading through a JSON files and converting the contents into a dictionaries
 json_file_planeswalker = open('myapplication/static/data/planeswalkerInfo.json')
@@ -65,22 +77,43 @@ def planeswalker(pwName):
 def summoner(sumName):
     # images_names = os.listdir('myapplication/static/images/planes')
     # planeswalkerNames = planeswalker_dict.keys()
-
-    username = w.get_summoner(name=sumName, region=EUROPE_NORDIC_EAST)
-    rankedstats = w.get_ranked_stats(username['id'], EUROPE_NORDIC_EAST)
-    championIds = w.static_get_champion_list()
-    runes = w.get_rune_pages(username['id'], EUROPE_NORDIC_EAST)
-    # my_ranked_stats_last_season = w.get_ranked_stats(me['id'], season=3)
-    # print (username)
-    return render_template('testhome.html', summoner=username, rankedstats=rankedstats,
-                           champions=championIds, runes=runes)
+    username = riotapi.get_summoner_by_name(sumName)
+    # rankedstats = riotapi.get_ranked_stats(sumName)
+    champions = riotapi.get_champions()
+    # championIds = riotapi.get_champions()
+    # mapping = {champion.id: champion.name for champion in championIds}
     #
-    # if sumName in planeswalkerNames:
-    #     sumName = planeswalkerData.get(sumName)
-    #     return render_template('planeswalker.html', planeswalker=sumName,
-    #                            images_names=images_names)
-    # else:
-    #     return abort(404)
+    # runes = riotapi.get_rune_pages(sumName)
+    sumId = username.id
+    match1 = riotapi.get_match_list(username, 3)
+    championName= riotapi.get_champion_by_name(match1)
+    # match = riotapi.get_match(2034758953)
+    masteryStats = riotapi.get_champion_mastery_score(username)
+    return render_template('testhome.html', summoner=username, champions=champions,
+                           match=match1,championName=championName,masteryscore=masteryStats)
+
+
+#
+# @app.route('/summoner/<sumName>')
+# def summoner(sumName):
+#     # images_names = os.listdir('myapplication/static/images/planes')
+#     # planeswalkerNames = planeswalker_dict.keys()
+#
+#     username = w.get_summoner(name=sumName, region=EUROPE_NORDIC_EAST)
+#     rankedstats = w.get_ranked_stats(username['id'], EUROPE_NORDIC_EAST)
+#     championIds = w.static_get_champion_list()
+#     runes = w.get_rune_pages(username['id'], EUROPE_NORDIC_EAST)
+#     # my_ranked_stats_last_season = w.get_ranked_stats(me['id'], season=3)
+#     # print (username)
+#     return render_template('testhome.html', summoner=username, rankedstats=rankedstats,
+#                            champions=championIds, runes=runes)
+#     #
+#     # if sumName in planeswalkerNames:
+#     #     sumName = planeswalkerData.get(sumName)
+#     #     return render_template('planeswalker.html', planeswalker=sumName,
+#     #                            images_names=images_names)
+#     # else:
+#     #     return abort(404)
 
 
 @app.route('/../static/images/walkers/<filename>')

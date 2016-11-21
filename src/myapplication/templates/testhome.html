@@ -1,21 +1,63 @@
+<div class="container">
+    <div class="bot-page">
+        <h2><span>A Legendary Story</span></h2>
+        <p>
+            {{summoner.name}}
+        <hr>
+        {{summoner}}
+        <hr>
+        <hr>
+        {{championName}}
+        <hr>
+        {{masteryscore}}
+        <hr>
+        {{match}}
 
-    <div class="container">
-        <div class="bot-page">
-            <h2><span>A Legendary Story</span></h2>
-            <p>
-                {{summoner.name}}<hr>
-                {{summoner.id}}
-            </p>
-            <p>
-                {{rankedstats}}
-            </p> <p>
-                {{champions}}
-            </p><hr>
-            <p>
-                 {{runes}}
-            </p>
+        {% for match in match %}
+        <hr>
+        {{match.timestamp}}
+        <hr>
+        {{match.champion}}
+        <hr>
+        {{match.region}}
+        <hr>
+        {{match.queue}}
+        <hr>
+        {{match.season}}
+        <hr>
+        {{match.matchId}}
+        <hr>
+        {{match.role}}
+        <hr>
+        {{match.platformId}}
+        <hr>
+        {{match.lane}}
+        <hr>
 
-        </div>
+        {% endfor %}
+        <hr>
+
+
+        <hr>
+        {{summoner.level}} {{summoner.id}}
+        <hr>
+        {{champions}}
+        <hr>
+        {{summoner.level}}
+        <hr>
+
+        {% for champion in champions %}
+        <hr>
+        {{champion.name}}
+        {{champion.id}}
+
+        {% endfor %}
+        <hr>
+
+        </p>
+
 
     </div>
+
+</div>
 
