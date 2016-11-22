@@ -6,22 +6,16 @@
         <p>{{alreadyThere}}
         <hr>
         <p>{{summonerData}}
+        <p>{{summonerData.summonerLevel}}
         <hr>
         <hr>
         <hr>
-        {% for summonerData in summonerData %}
-        {{summonerData.id}}
-        {{summonerData.summonername}}
-        {{summonerData.summonerLevel}}
-        {% endfor %}
 
+        <hr>
         {% for key, value in summonerData.iteritems() %}
-
-        {{ key }} : {{ value }}
-        <hr>
-
+        {{ key }}<p>icara</p>
+        {{ value }}
         {% endfor %}
-        <hr>
         <hr>
         <hr>
         <hr>
@@ -33,10 +27,7 @@
 
 
         <p>
-            {{summoner.name}}
-        <hr>
-        {{summoner}}
-        <hr>
+
         <hr>
         {{championName}}
         <hr>
@@ -68,14 +59,6 @@
         {% endfor %}
         <hr>
 
-
-        <hr>
-        {{summoner.level}} {{summoner.id}}
-        <hr>
-        {{champions}}
-        <hr>
-        {{summoner.level}}
-        <hr>
 
         {% for champion in champions %}
         <hr>

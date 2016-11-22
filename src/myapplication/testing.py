@@ -30,22 +30,26 @@ riotapi.set_load_policy(LoadPolicy.lazy)
 
 class summoners(db.Model):
     id = db.Column(db.Integer, primary_key=True, default=lambda: uuid.uuid4().hex)
-    summonername = db.Column(db.Unicode(50), unique=True)
+    summonerName = db.Column(db.Unicode(50), unique=True)
+
+    revisionDate = db.Column(db.Integer)
+    summonerLevel = db.Column(db.Integer)
 
     # summonerID = db.Column(db.Integer, unique=True)
 
-    # def __init__(self, id, summonername, summonerID):
-    def __init__(self, id, summonername):
+    # def __init__(self, id, summonerName, summonerID):
+    def __init__(self, id, summonerName, summonerLevel):
         self.id = id
-        self.summonername = summonername
+        self.summonerName = summonerName
+        self.summonerLevel = summonerLevel
         # self.summonerID = summonerID
 
     def __repr__(self):
         return ' %s' % (
-            self.summonername)
+            self.summonerName)
 
 
-# db.drop_all()
+db.drop_all()
 db.create_all()
 
 
@@ -68,14 +72,14 @@ def init(app):
 
 @app.route('/summoner/<sumName>')
 def summoner(sumName):
-    username = riotapi.get_summoner_by_name(sumName)
-
-    exists = db.session.query(summoners.id).filter_by(
-        summonername=username.name).scalar() is not None
+    exists = db.session.query(summoners.id).filter(
+        summoners.summonerName.ilike(sumName)).scalar() is not None
     alreadyThere = ''
     summonerData = []
     if exists is False:
-        addNewSumomner = summoners(id=username.id, summonername=username.name)
+        username = riotapi.get_summoner_by_name(sumName)
+        addNewSumomner = summoners(id=username.id, summonerName=username.name,
+                                   summonerLevel=username.level)
 
         app.logger.info(summoners.id)
 
@@ -83,24 +87,26 @@ def summoner(sumName):
         db.session.commit()
         app.logger.info(summoners.id)  # increment the primary id
 
-        # summonerData = [u.__dict__ for u in db.session.query(summoners).all()]
-        summonerData = dict(
-            (row.id, row)
-            for row in db.session.query(summoners).filter(summoners.id == username.id)
-        )
+        # covert the results from the query into a dict with column names and value pairs
+        query = summoners.query.filter_by(id=username.id).first()
+
+        dictionary = dict((col, getattr(query, col)) for col in
+                          query.__table__.columns.keys())
+
+        return render_template('testhome.html', summoner=username,
+                               alreadyThere=alreadyThere,
+                               summonerData=dictionary)
 
     else:
         alreadyThere = 'They are there'
 
-        summonerData = dict(
-            (row.id, row)
-            for row in db.session.query(summoners).filter_by(
-                summonername=username.name)
-        )
-
-    return render_template('testhome.html', summoner=username,
-                           alreadyThere=alreadyThere,
-                           summonerData=summonerData)
+        summonerData = dict((row.summonerLevel, row)
+                            for row in
+                            db.session.query(summoners).filter(
+                                summoners.summonerName.ilike(sumName)
+                            ))
+        return render_template('testhomeSummoner.html', alreadyThere=alreadyThere,
+                               summonerData=summonerData)
 
 
 if __name__ == '__main__':
