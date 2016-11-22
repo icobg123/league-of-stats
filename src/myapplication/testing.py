@@ -31,7 +31,6 @@ riotapi.set_load_policy(LoadPolicy.lazy)
 class summoners(db.Model):
     id = db.Column(db.Integer, primary_key=True, default=lambda: uuid.uuid4().hex)
     summonerName = db.Column(db.Unicode(50), unique=True)
-
     revisionDate = db.Column(db.Integer)
     summonerLevel = db.Column(db.Integer)
 
@@ -90,7 +89,8 @@ def summoner(sumName):
         # covert the results from the query into a dict with column names and value pairs
         query = summoners.query.filter_by(id=username.id).first()
 
-        dictionary = dict((col, getattr(query, col)) for col in
+        dictionary = dict((col, getattr(query, col))
+                          for col in
                           query.__table__.columns.keys())
 
         return render_template('testhome.html', summoner=username,
@@ -100,13 +100,19 @@ def summoner(sumName):
     else:
         alreadyThere = 'They are there'
 
+        query = summoners.query.filter(summoners.summonerName.contains(sumName)).first()
+
+        dictionary = dict((col, getattr(query, col))
+                          for col in
+                          query.__table__.columns.keys())
+
         summonerData = dict((row.summonerLevel, row)
                             for row in
                             db.session.query(summoners).filter(
                                 summoners.summonerName.ilike(sumName)
                             ))
         return render_template('testhomeSummoner.html', alreadyThere=alreadyThere,
-                               summonerData=summonerData)
+                               summonerData=dictionary)
 
 
 if __name__ == '__main__':
