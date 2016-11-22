@@ -22,7 +22,19 @@
         <hr>
         <hr>
 
-
+        <p> {% for rune_page in rune_pages %}
+            {{rune_page.name}}
+        <hr>
+        {{rune_page.id}}
+        <hr>
+        {% for rune in rune_page.runes %}
+        {{rune.name}}
+        {{rune.id}}
+        {{rune.image}}
+        {% endfor %}
+        <hr>
+        {{rune_page.current}}
+        {% endfor %}
         </p>
 
 

@@ -8,6 +8,81 @@
         <p>{{summonerData}}
         <hr>
         <hr>
+        <hr>
+        <hr>
+        <hr>
+        <hr>
+        <p> match_info ID: {{match_info.id}}</p>
+        <p> Version/Patch: {{match_info.version}}</p>
+        <p>
+        <p> Duration: {{match_info.duration}}</p>
+        <p> Map: {{match_info.map}}</p>
+        <p> Mode: {{match_info.mode}}</p>
+        <p> Type: {{match_info.type}}</p>
+        <p> Platform: {{match_info.platform}}</p>
+
+        <p> Region: {{match_info.region}}</p>
+        <p> Season: {{match_info.season}}</p>
+        <p>
+            Red Team Bans:
+            {% for ban in match_info.red_team.bans %}
+            {{ban.champion.name}}
+            {% endfor %}</p>
+
+        <p> Blue Team Bans:
+            {% for ban in match_info.blue_team.bans %}
+            {{ban.champion.name}}
+            {% endfor %}</p>
+
+
+        <hr>
+        <h1>match participants</h1>
+        <p>
+            {% for participant in match_info.participants %}
+        <p>{{participant.champion.name}}</p>
+        <p><img src="http://ddragon.leagueoflegends.com/cdn/6.22.1/img/champion/{{participant.champion.image.link}}"></p>
+        <p><img src="{{participant.champion.image.sprite}}"></p>
+        <p> {{participant.summoner_name}}</p>
+        <p> {{participant.stats.win}}</p>
+        <p> {{participant.side}}</p>
+        <p> {{participant.stats.kills}}</p>
+        <p> {{participant.stats.deaths}}</p>
+        <p> {{participant.stats.assists}}</p>
+        <p> {{participant.stats.kda}}</p>
+        <p> {{participant.stats.cs}}</p>
+        <p> {{participant.summoner_spell_d}}</p>
+        <p> {{participant.summoner_spell_f}}</p>
+        <p> {{participant.stats.champion_level}}</p>
+        <p> {{participant.stats.first_blood}}</p>
+        <p> {{participant.stats.gold_earned}}</p>
+        <p> {{participant.stats.gold_spent}}</p>
+
+
+        {% for item in participant.stats.items %}
+
+        {% if item is not none %}
+        <p> {{ item.name}}</p>
+        {%endif %}
+
+        {% endfor %}
+
+
+        <p> {{participant.stats.magic_damage_dealt}}</p>
+        <p> {{participant.stats.physical_damage_dealt}}</p>
+        <p> {{participant.timeline.lane}}</p>
+        <p> {{participant.timeline.role}}</p>
+        <p> {% endfor %}</p>
+
+
+        <hr>
+        <hr>
+        <hr>
+        <hr>
+        <hr>
+        <hr>
+        <hr>
+        <hr>
+        <hr>
 
 
         {% for rune_page in rune_pages %}
@@ -57,30 +132,7 @@
         <hr>
         {{masteryscore}}
         <hr>
-        {{match}}
 
-        {% for match in match %}
-        <hr>
-        {{match.timestamp}}
-        <hr>
-        {{match.champion}}
-        <hr>
-        {{match.region}}
-        <hr>
-        {{match.queue}}
-        <hr>
-        {{match.season}}
-        <hr>
-        {{match.matchId}}
-        <hr>
-        {{match.role}}
-        <hr>
-        {{match.platformId}}
-        <hr>
-        {{match.lane}}
-        <hr>
-
-        {% endfor %}
         <hr>
 
 
