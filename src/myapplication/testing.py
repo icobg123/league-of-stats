@@ -175,24 +175,25 @@ def summoner(sumName):
         query = Summoners.query.filter_by(id=username.id).first()
 
         itemQuery = Items.query.all()
-        summnersDic = dict((col, getattr(query, col))
-                           for col in
-                           query.__table__.columns.keys())
 
+        # summnersDic = dict((col, getattr(query, col))
+        #                    for col in
+        #                    query.__table__.columns.keys())
+
+        summnersDic = to_dict(query)
         # for u in session.query(User).all():
         #     print u.__dict__
-
-
         d = {}
+        for item in itemQuery:
+            d[item] = to_dict(item)
+        # d = to_dict(itemQuery)
 
-        for row in itemQuery.item():
-            for column in row.__table__.columns:
-                d[column.name] = str(getattr(row, column.name))
-
-
-        itemsDic = dict(dict((col, getattr(itemQuery, col))
-                             for col in
-                             itemQuery.__table__.columns.keys()))
+        # for row in itemQuery:
+        #     d[row.] = row.__dict__
+        #
+        # itemsDic = dict(dict((col, getattr(itemQuery, col))
+        #                      for col in
+        #                      itemQuery.__table__.columns.keys()))
 
         match_list = username.match_list()
         match = match_list[0].match()
@@ -206,25 +207,34 @@ def summoner(sumName):
 
     else:
 
-    alreadyThere = 'They are there'
+        alreadyThere = 'They are there'
 
-    query = Summoners.query.filter(Summoners.summonerName.contains(sumName)).first()
+        query = Summoners.query.filter(Summoners.summonerName.contains(sumName)).first()
 
-    summnersDic = dict((col, getattr(query, col))
-                       for col in
-                       query.__table__.columns.keys())
+        summnersDic = dict((col, getattr(query, col))
+                           for col in
+                           query.__table__.columns.keys())
 
-    summonerData = dict((row.summonerLevel, row)
-                        for row in
-                        db.session.query(Summoners).filter(
-                            Summoners.summonerName.ilike(sumName)
-                        ))
+        summonerData = dict((row.summonerLevel, row)
+                            for row in
+                            db.session.query(Summoners).filter(
+                                Summoners.summonerName.ilike(sumName)
+                            ))
 
-    # rune_pages = riotapi.get_rune_pages(username)
-    return render_template('testhomeSummoner.html', alreadyThere=alreadyThere,
-                           summonerData=summnersDic
-                           # rune_pages=rune_pages
-                           )
+        # rune_pages = riotapi.get_rune_pages(username)
+        return render_template('testhomeSummoner.html', alreadyThere=alreadyThere,
+                               summonerData=summnersDic
+                               # rune_pages=rune_pages
+                               )
+
+
+def to_dict(model_instance, query_instance=None):
+    if hasattr(model_instance, '__table__'):
+        return {c.name: str(getattr(model_instance, c.name)) for c in
+                model_instance.__table__.columns}
+    else:
+        cols = query_instance.column_descriptions
+        return {cols[i]['name']: model_instance[i] for i in range(len(cols))}
 
 
 if __name__ == '__main__':

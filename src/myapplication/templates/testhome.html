@@ -7,14 +7,15 @@
         <hr>
         <p>{{summonerData}}
         <p>{{item_info}}
+        <hr>
+        {% for item in item_info %}
+        <hr>
+        {{item.itemName}}
+        {{item.itemGold}}
+        {{item.itemImage}}
 
-            {% for item in item_info %}
-            {{item.itemName}}
-            {{item.itemGold}}
-            {{item.itemImage}}
 
-
-            {% endfor %}
+        {% endfor %}
         <hr>
         <hr>
         {{item_infor}}
