@@ -6,8 +6,18 @@
         <p>{{alreadyThere}}
         <hr>
         <p>{{summonerData}}
+        <p>{{item_info}}
+
+            {% for item in item_info %}
+            {{item.itemName}}
+            {{item.itemGold}}
+            {{item.itemImage}}
+
+
+            {% endfor %}
         <hr>
         <hr>
+        {{item_infor}}
         <hr>
         <hr>
         <hr>
@@ -40,7 +50,9 @@
         <p>
             {% for participant in match_info.participants %}
         <p>{{participant.champion.name}}</p>
-        <p><img src="http://ddragon.leagueoflegends.com/cdn/6.22.1/img/champion/{{participant.champion.image.link}}"></p>
+        <p>
+            <img src="http://ddragon.leagueoflegends.com/cdn/6.22.1/img/champion/{{participant.champion.image.link}}">
+        </p>
         <p><img src="{{participant.champion.image.sprite}}"></p>
         <p> {{participant.summoner_name}}</p>
         <p> {{participant.stats.win}}</p>
@@ -50,6 +62,7 @@
         <p> {{participant.stats.assists}}</p>
         <p> {{participant.stats.kda}}</p>
         <p> {{participant.stats.cs}}</p>
+        <p> {{participant.stats.cs.image}}</p>
         <p> {{participant.summoner_spell_d}}</p>
         <p> {{participant.summoner_spell_f}}</p>
         <p> {{participant.stats.champion_level}}</p>
@@ -61,7 +74,10 @@
         {% for item in participant.stats.items %}
 
         {% if item is not none %}
-        <p> {{ item.name}}</p>
+        <p>
+        <p>
+            <img src="http://ddragon.leagueoflegends.com/cdn/6.22.1/img/item/{{item.image.link}}">
+        </p>
         {%endif %}
 
         {% endfor %}

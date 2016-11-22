@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import sys
-import json
+import urllib, json
 import ConfigParser
 from flask import Flask, render_template, url_for, redirect, request, send_from_directory, \
     abort, \
@@ -16,6 +16,10 @@ from flask_sqlalchemy import SQLAlchemy
 app = Flask(__name__)
 app.config[
     'SQLALCHEMY_DATABASE_URI'] = 'sqlite:////home/tc/CW2/src/myapplication/var/league_of_legends.db'
+staticDataItems = "http://ddragon.leagueoflegends.com/cdn/6.22.1/data/en_US/item.json"
+response = urllib.urlopen(staticDataItems)
+data = json.loads(response.read())
+datapoints = data['data']
 
 db = SQLAlchemy(app)
 
@@ -45,6 +49,28 @@ class Summoners(db.Model):
     def __repr__(self):
         return ' %s' % self.summonerName
 
+
+class Items(db.Model):
+    id = db.Column(db.Integer, primary_key=True, default=lambda: uuid.uuid4().hex)
+    itemName = db.Column(db.Unicode(50))
+    itemImage = db.Column(db.Unicode)
+    itemGold = db.Column(db.Integer)
+
+    # summonerID = db.Column(db.Integer, unique=True)
+
+    # def __init__(self, id, summonerName, summonerID):
+    def __init__(self, id, itemName, itemImage, itemGold):
+        self.id = id
+        self.itemName = itemName
+        # self.itemDesc = itemDesc
+        # self.itemText = itemText
+        self.itemImage = itemImage
+        self.itemGold = itemGold
+        # self.summonerID = summonerID
+
+    def __repr__(self):
+        return ' %s' % self.itemName
+
         # class RunePages(db.Model):
         #     id = db.Column(db.Integer, primary_key=True, default=lambda: uuid.uuid4().hex)
         #     runePageName = db.Column(db.Unicode(50))
@@ -69,6 +95,15 @@ class Summoners(db.Model):
 
 db.drop_all()
 db.create_all()
+
+for item in datapoints.iteritems():
+    # print (item[1]['name'], item[1]['gold']['base'], item[1]['image']['full'])
+
+    addItem = Items(id=item[0], itemName=item[1]['name'],
+                    itemImage=item[1]['image']['full'],
+                    itemGold=item[1]['gold']['base'])
+    db.session.add(addItem)
+    db.session.commit()
 
 
 def init(app):
@@ -106,6 +141,11 @@ def home():
     return render_template('homepage.html', err=err)
 
 
+@app.route('/json')
+def json():
+    return render_template('homepage.html', json=data)
+
+
 @app.route('/summoner/<sumName>')
 def summoner(sumName):
     # riotapi.set_region(region)
@@ -113,9 +153,9 @@ def summoner(sumName):
         Summoners.summonerName.ilike(sumName)).scalar() is not None
     alreadyThere = ''
     summonerData = []
-    username = riotapi.get_summoner_by_name(sumName)
-    if exists is False:
 
+    if exists is False:
+        username = riotapi.get_summoner_by_name(sumName)
         addNewSumomner = Summoners(id=username.id, summonerName=username.name,
                                    summonerLevel=username.level)
 
@@ -134,9 +174,25 @@ def summoner(sumName):
         # covert the results from the query into a dict with column names and value pairs
         query = Summoners.query.filter_by(id=username.id).first()
 
-        dictionary = dict((col, getattr(query, col))
-                          for col in
-                          query.__table__.columns.keys())
+        itemQuery = Items.query.all()
+        summnersDic = dict((col, getattr(query, col))
+                           for col in
+                           query.__table__.columns.keys())
+
+        # for u in session.query(User).all():
+        #     print u.__dict__
+
+
+        d = {}
+
+        for row in itemQuery.item():
+            for column in row.__table__.columns:
+                d[column.name] = str(getattr(row, column.name))
+
+
+        itemsDic = dict(dict((col, getattr(itemQuery, col))
+                             for col in
+                             itemQuery.__table__.columns.keys()))
 
         match_list = username.match_list()
         match = match_list[0].match()
@@ -144,29 +200,31 @@ def summoner(sumName):
         return render_template('testhome.html', summoner=username,
                                alreadyThere=alreadyThere,
                                rune_pages=rune_pages,
-                               summonerData=dictionary,
-                               match_info=match)
+                               summonerData=summnersDic,
+                               match_info=match,
+                               item_info=d)
 
     else:
-        alreadyThere = 'They are there'
 
-        query = Summoners.query.filter(Summoners.summonerName.contains(sumName)).first()
+    alreadyThere = 'They are there'
 
-        dictionary = dict((col, getattr(query, col))
-                          for col in
-                          query.__table__.columns.keys())
+    query = Summoners.query.filter(Summoners.summonerName.contains(sumName)).first()
 
-        summonerData = dict((row.summonerLevel, row)
-                            for row in
-                            db.session.query(Summoners).filter(
-                                Summoners.summonerName.ilike(sumName)
-                            ))
+    summnersDic = dict((col, getattr(query, col))
+                       for col in
+                       query.__table__.columns.keys())
 
-        rune_pages = riotapi.get_rune_pages(username)
-        return render_template('testhomeSummoner.html', alreadyThere=alreadyThere,
-                               summonerData=dictionary,
-                               rune_pages=rune_pages
-                               )
+    summonerData = dict((row.summonerLevel, row)
+                        for row in
+                        db.session.query(Summoners).filter(
+                            Summoners.summonerName.ilike(sumName)
+                        ))
+
+    # rune_pages = riotapi.get_rune_pages(username)
+    return render_template('testhomeSummoner.html', alreadyThere=alreadyThere,
+                           summonerData=summnersDic
+                           # rune_pages=rune_pages
+                           )
 
 
 if __name__ == '__main__':
