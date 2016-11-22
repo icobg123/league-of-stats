@@ -31,7 +31,6 @@ riotapi.set_load_policy(LoadPolicy.lazy)
 class summoners(db.Model):
     id = db.Column(db.Integer, primary_key=True, default=lambda: uuid.uuid4().hex)
     summonerName = db.Column(db.Unicode(50), unique=True)
-    revisionDate = db.Column(db.Integer)
     summonerLevel = db.Column(db.Integer)
 
     # summonerID = db.Column(db.Integer, unique=True)
@@ -44,8 +43,7 @@ class summoners(db.Model):
         # self.summonerID = summonerID
 
     def __repr__(self):
-        return ' %s' % (
-            self.summonerName)
+        return ' %s' % self.summonerName
 
 
 db.drop_all()
@@ -80,6 +78,8 @@ def summoner(sumName):
         addNewSumomner = summoners(id=username.id, summonerName=username.name,
                                    summonerLevel=username.level)
 
+        rune_pages = riotapi.get_rune_pages(username)
+
         app.logger.info(summoners.id)
 
         db.session.add(addNewSumomner)
@@ -95,6 +95,7 @@ def summoner(sumName):
 
         return render_template('testhome.html', summoner=username,
                                alreadyThere=alreadyThere,
+                               rune_pages=rune_pages,
                                summonerData=dictionary)
 
     else:
