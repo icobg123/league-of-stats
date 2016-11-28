@@ -1,0 +1,22 @@
+<div class="container">
+    <div class="bot-page">
+        <h2><span>A Legendary Story</span></h2>
+
+
+        <p>{{alreadyThere}}
+        <hr>
+            {% for item in item_info %}
+        <hr>
+        {{item.itemName}}<br>
+        {{item.itemGold}}<br>
+        {{item.itemDescription}}<br><img src="http://ddragon.leagueoflegends.com/cdn/6.22.1/img/item/{{item.itemImage}}">
+        {{item.itemImage}}
+
+
+        {% endfor %}
+
+
+    </div>
+
+</div>
+

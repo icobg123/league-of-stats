@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import sys
+import os
 import urllib, json
 import ConfigParser
 from flask import Flask, render_template, url_for, redirect, request, send_from_directory, \
@@ -9,7 +10,7 @@ from flask import Flask, render_template, url_for, redirect, request, send_from_
 from random import shuffle
 from riotwatcher import RiotWatcher, EUROPE_NORDIC_EAST
 from cassiopeia import riotapi
-from cassiopeia.type.core.common import LoadPolicy
+from cassiopeia.type.core.common import LoadPolicy, StatSummaryType
 
 from flask_sqlalchemy import SQLAlchemy
 
@@ -24,26 +25,30 @@ datapoints = data['data']
 db = SQLAlchemy(app)
 
 dblocation = 'var/sqlite3.db'
-riotapi.set_region("EUNE")
+# riotapi.set_region("EUNE")
 
 riotapi.print_calls(True)
 
 riotapi.set_api_key('23da5b32-c763-41ed-8d7a-f2b1023d8174')
-riotapi.set_load_policy(LoadPolicy.lazy)
+# riotapi.set_load_policy(LoadPolicy.lazy)
+riotapi.set_load_policy("eager")
 
 
 class Summoners(db.Model):
+    __tablename__ = 'summoners'
     id = db.Column(db.Integer, primary_key=True, default=lambda: uuid.uuid4().hex)
     summonerName = db.Column(db.Unicode(50), unique=True)
     summonerLevel = db.Column(db.Integer)
+    summonerIcon = db.Column(db.Integer)
 
     # summonerID = db.Column(db.Integer, unique=True)
 
     # def __init__(self, id, summonerName, summonerID):
-    def __init__(self, id, summonerName, summonerLevel):
+    def __init__(self, id, summonerName, summonerLevel, summonerIcon):
         self.id = id
         self.summonerName = summonerName
         self.summonerLevel = summonerLevel
+        self.summonerIcon = summonerIcon
         # self.summonerID = summonerID
 
     def __repr__(self):
@@ -51,25 +56,93 @@ class Summoners(db.Model):
 
 
 class Items(db.Model):
+    __tablename__ = 'items'
     id = db.Column(db.Integer, primary_key=True, default=lambda: uuid.uuid4().hex)
     itemName = db.Column(db.Unicode(50))
     itemImage = db.Column(db.Unicode)
+    itemDescription = db.Column(db.Unicode)
     itemGold = db.Column(db.Integer)
 
     # summonerID = db.Column(db.Integer, unique=True)
 
     # def __init__(self, id, summonerName, summonerID):
-    def __init__(self, id, itemName, itemImage, itemGold):
+    def __init__(self, id, itemName, itemImage, itemDescription, itemGold):
         self.id = id
         self.itemName = itemName
+
         # self.itemDesc = itemDesc
         # self.itemText = itemText
         self.itemImage = itemImage
+        self.itemDescription = itemDescription
         self.itemGold = itemGold
         # self.summonerID = summonerID
 
     def __repr__(self):
         return ' %s' % self.itemName
+
+
+class Matches(db.Model):
+    __tablename__ = 'matches'
+    id = db.Column(db.Integer, primary_key=True, default=lambda: uuid.uuid4().hex)
+    matchRegion = db.Column(db.Unicode(50))
+    matchDuration = db.Column(db.Integer)
+    matchParticipants = db.Column(db.Unicode(1000))
+    matchMode = db.Column(db.Unicode(50))
+
+    # summonerID = db.Column(db.Integer, unique=True)
+
+    # def __init__(self, id, summonerName, summonerID):
+    def __init__(self, id, matchRegion, matchDuration, matchParticipants, matchMode):
+        self.id = id
+        self.matchRegion = matchRegion
+        self.matchDuration = matchDuration
+        # self.itemDesc = itemDesc
+        # self.itemText = itemText
+        self.matchParticipants = matchParticipants
+        self.matchMode = matchMode
+        # self.summonerID = summonerID
+
+    def __repr__(self):
+        return ' %s' % self.id
+
+        # class Teams(db.Model):
+        #     __tablename__ = 'teams'
+        #     teamId = db.Column(db.Integer)
+        #     matchRegion = db.Column(db.Unicode(50))
+        #     matchDuration = db.Column(db.Integer)
+        #     matchId = db.Column(ForeignKey('matches.id'))
+        #     matchParticipants = db.Column(db.Unicode(1000))
+        #     matchMode = db.Column(db.Unicode(50))
+        #
+        #     matches = relationship("Matches")
+        #
+        #     __table_args__ = (
+        #         PrimaryKeyConstraint('teamId', 'matchId'),
+        #         ForeignKeyConstraint(
+        #             ['writer_id', 'magazine_id'],
+        #             ['writer.id', 'writer.magazine_id']
+        #         ),
+        #     )
+        #
+        #
+        #     # summonerID = db.Column(db.Integer, unique=True)
+        #
+        #     # def __init__(self, id, summonerName, summonerID):
+        #     def __init__(self, id, matchRegion, matchDuration, matchParticipants, matchMode):
+        #         self.id = id
+        #         self.matchRegion = matchRegion
+        #         self.matchDuration = matchDuration
+        #         # self.itemDesc = itemDesc
+        #         # self.itemText = itemText
+        #         self.matchParticipants = matchParticipants
+        #         self.matchMode = matchMode
+        #         # self.summonerID = summonerID
+        #
+        #     def __repr__(self):
+        #         return ' %s' % self.id
+        #
+
+
 
         # class RunePages(db.Model):
         #     id = db.Column(db.Integer, primary_key=True, default=lambda: uuid.uuid4().hex)
@@ -100,6 +173,7 @@ for item in datapoints.iteritems():
     # print (item[1]['name'], item[1]['gold']['base'], item[1]['image']['full'])
 
     addItem = Items(id=item[0], itemName=item[1]['name'],
+                    itemDescription=item[1]['description'],
                     itemImage=item[1]['image']['full'],
                     itemGold=item[1]['gold']['base'])
     db.session.add(addItem)
@@ -130,11 +204,12 @@ def home():
     if request.method == 'POST':
         if not request.form['summonerName']:
             err = 'Please provide your summoner name'
-        # elif not request.form['region']:
-        #     err = 'Please set your region'
+        elif not request.form['region']:
+            err = 'Please set your region'
         else:
             summonerName = request.form['summonerName']
-            return redirect(url_for('summoner', sumName=summonerName))
+            region = request.form['region']
+            return redirect(url_for('summoner', sumName=summonerName, region=region))
             # return redirect(url_for('summoner', sumName=summonerName,
             #                         region=riotapi.set_region(request.form['region'])))
 
@@ -146,9 +221,29 @@ def json():
     return render_template('homepage.html', json=data)
 
 
-@app.route('/summoner/<sumName>')
-def summoner(sumName):
-    # riotapi.set_region(region)
+@app.route('/items')
+def items():
+    itemQuery = Items.query.all()
+    itemsD = {}
+    for item in itemQuery:
+        itemsD[item] = to_dict(item)
+
+    return render_template('items.html', item_info=itemsD)
+
+
+@app.route('/items')
+def getLastMatch():
+    itemQuery = Items.query.all()
+    itemsD = {}
+    for item in itemQuery:
+        itemsD[item] = to_dict(item)
+
+    return render_template('items.html', item_info=itemsD)
+
+
+@app.route('/summoner/<region>/<sumName>')
+def summoner(region, sumName):
+    riotapi.set_region(region)
     exists = db.session.query(Summoners.id).filter(
         Summoners.summonerName.ilike(sumName)).scalar() is not None
     alreadyThere = ''
@@ -157,12 +252,14 @@ def summoner(sumName):
     if exists is False:
         username = riotapi.get_summoner_by_name(sumName)
         addNewSumomner = Summoners(id=username.id, summonerName=username.name,
-                                   summonerLevel=username.level)
+                                   summonerLevel=username.level,
+                                   summonerIcon=username.profile_icon_id)
 
         db.session.add(addNewSumomner)
         db.session.commit()
 
-        rune_pages = riotapi.get_rune_pages(username)
+        # rune_pages = riotapi.get_rune_pages(username)
+
         #
         # addRunePages = RunePages(id=rune_pages.id, runePageName=rune_pages.name,
         #                          runePageCurrent=rune_pages.current,
@@ -176,13 +273,8 @@ def summoner(sumName):
 
         itemQuery = Items.query.all()
 
-        # summnersDic = dict((col, getattr(query, col))
-        #                    for col in
-        #                    query.__table__.columns.keys())
-
         summnersDic = to_dict(query)
-        # for u in session.query(User).all():
-        #     print u.__dict__
+
         d = {}
         for item in itemQuery:
             d[item] = to_dict(item)
@@ -200,9 +292,9 @@ def summoner(sumName):
 
         return render_template('testhome.html', summoner=username,
                                alreadyThere=alreadyThere,
-                               rune_pages=rune_pages,
-                               summonerData=summnersDic,
                                match_info=match,
+                               summonerData=summnersDic,
+
                                item_info=d)
 
     else:

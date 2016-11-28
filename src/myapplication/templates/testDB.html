@@ -1,0 +1,74 @@
+<div class="container">
+    <div class="bot-page">
+        <h2><span>A Legendary Story</span></h2>
+
+
+        <p>{{alreadyThere}}
+        <hr>
+        <p>{{summonerData}}
+        <p>{{item_info}}
+        <hr>
+        {% for item in item_info %}
+        <hr>
+        {{item.itemName}}
+        {{item.itemGold}}
+        {{item.itemImage}}
+
+
+        {% endfor %}
+        <hr>
+        <hr>
+        {{item_infor}}
+        <hr>
+        <hr>
+        <hr>
+        <hr>
+
+        <hr>
+        <hr>
+        <hr>
+        <hr>
+        <hr>
+        <hr>
+
+
+        </p>
+
+
+        <p>
+            {{summoner.name}}
+        <hr>
+        {{summoner}}
+        <hr>
+        <hr>
+        {{championName}}
+        <hr>
+        {{masteryscore}}
+        <hr>
+
+        <hr>
+
+
+        <hr>
+        {{summoner.level}} {{summoner.id}}
+        <hr>
+        {{champions}}
+        <hr>
+        {{summoner.level}}
+        <hr>
+
+        {% for champion in champions %}
+        <hr>
+        {{champion.name}}
+        {{champion.id}}
+
+        {% endfor %}
+        <hr>
+
+        </p>
+
+
+    </div>
+
+</div>
+
