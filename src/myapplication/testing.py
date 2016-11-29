@@ -192,8 +192,6 @@ def init(app):
         app.config['port'] = config.get("config", "port")
         app.config['url'] = config.get("config", "url")
         app.secret_key = os.urandom(24)
-        app.permanent_session_lifetime = timedelta(seconds=60)
-
     except:
         print ('Could not read  config: '), config_location
 
@@ -211,8 +209,6 @@ def home():
             summonerName = request.form['summonerName']
             region = request.form['region']
             return redirect(url_for('summoner', sumName=summonerName, region=region))
-            # return redirect(url_for('summoner', sumName=summonerName,
-            #                         region=riotapi.set_region(request.form['region'])))
 
     return render_template('homepage.html', err=err)
 
@@ -236,6 +232,7 @@ def items():
 def summoner(region, sumName):
     riotapi.set_region(region)
     riotapi.set_load_policy(LoadPolicy.eager)
+    # check if the summoner is already in the database
     exists = db.session.query(Summoners.id).filter(
         Summoners.summonerName.ilike(sumName)).scalar() is not None
     alreadyThere = ''
@@ -261,11 +258,11 @@ def summoner(region, sumName):
             match_list = username.match_list()
             match = match_list[0].match()
 
-            return render_template('testhome.html', summoner=username,
+            return render_template('testhomeSummoner.html', summoner=username,
                                    alreadyThere=alreadyThere,
                                    match_info=match,
                                    summonerData=summnersDic,
-                                   rune_pages=rune_pages
+                                   rune_pages=rune_pages, region=region
                                    )
         except APIError as error:
             if error.error_code in [404]:
@@ -300,14 +297,13 @@ def summoner(region, sumName):
                                    alreadyThere=alreadyThere,
                                    match_info=match,
                                    summonerData=summnersDic,
-                                   rune_pages=rune_pages
+                                   rune_pages=rune_pages, region=region
                                    )
         except APIError as error:
             if error.error_code in [404]:
                 return render_template('404.html', summoner=sumName)
 
-        # rune_pages = riotapi.get_rune_pages(username)
-
+                # rune_pages = riotapi.get_rune_pages(username)
 
 
 @app.errorhandler(404)

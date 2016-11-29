@@ -89,7 +89,7 @@ p {
     text-align: center;
     font-size: 4em;
     font-weight: 300;
-    text-transform: uppercase;
+    /*text-transform: uppercase;*/
     color: #212121;
     text-align: center;
     background: rgba(255, 255, 255, 0.7);
@@ -99,6 +99,29 @@ p {
     clear: both;
 }
 
+.items {
+
+    display: block;
+    margin: 0px;
+    padding: 0px;
+    position: relative;
+    height: auto;
+    overflow-y: hidden;
+    overflow-x: auto;
+    word-wrap: normal;
+    white-space: nowrap;
+}
+
+.items img {
+    max-width: 50px;
+    display: inline;
+    margin: 0px;
+    padding: 0px;
+    vertical-align: middle;
+}
+table a{
+    color: black;
+}
 /*.bio h2::before {*/
 /*content: '';*/
 /*height: 1px;*/

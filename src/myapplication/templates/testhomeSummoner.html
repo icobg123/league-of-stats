@@ -15,9 +15,22 @@
 
 
         <div class="quote">
-            <h1>
-                {{summonerData.summonerName}}
+
+            <h1><img class=""
+                     src="http://ddragon.leagueoflegends.com/cdn/6.22.1/img/profileicon/{{summonerData.summonerIcon}}.png">
+                Summoner: {{summonerData.summonerName}}
+
+                Level: {{summonerData.summonerLevel}}
             </h1>
+        </div>
+        <div class="quote">
+            <h2>
+                {% for participant in match_info.participants %}
+                {% if participant.summoner.id|string() == summonerData.id|string() %}
+                Last champion played: {{participant.champion.name}}
+                {% endif %}
+                {% endfor %}
+            </h2>
         </div>
 
     </div>
@@ -26,65 +39,44 @@
     <div class="container">
         <p>{{alreadyThere}}
         <hr>
-        <p>{{summonerData}}
-            <img class="runes"
-                 src="http://ddragon.leagueoflegends.com/cdn/6.22.1/img/profileicon/{{summonerData.summonerIcon}}.png">
-        <p>
-        <p>{{summonerData.summonerLevel}}
-        <hr>
-        <hr>
-        <hr>
-        {{summonerData.id}}
-        <hr>
-        {% for key, value in summonerData.iteritems() %}
-        {{ key }}: {{ value }}<br>
-        {% endfor %}
+        <div class="bot-page">
+            <h2><span>Rune Pages</span></h2>
+            <div class="table-responsive">
+                <table class="table">
+                    {% for rune_page in rune_pages %}
+                    <tbody>
+
+                    <tr>    
+                        <th>Rune Page Name - {{rune_page.name|title}}</th>
+                        <th>
+                            <div class="items">
+                                {% for rune in rune_page.runes %}
 
 
-        {% for rune_page in rune_pages %}
-        <div class="table-responsive">
-            <table class="table">
-                 
-                <thead>
-                <tr>
-                       
-                    <th>Rune Page Name - {{rune_page.name|upper}}</th>
+                                <img src="http://ddragon.leagueoflegends.com/cdn/6.22.1/img/rune/{{rune.image.link}}">
+
+                                {% endfor %}
+                            </div>
+                        </th>
+
+                    </tr>
+
+                    {% endfor %}
+                    </tbody>
+                </table>
 
 
-                </tr>
-                </thead>
-
-                <tbody>
-                <tr> {% for rune in rune_page.runes %}
-
-                    <td><img class="runes"
-                             src="http://ddragon.leagueoflegends.com/cdn/6.22.1/img/rune/{{rune.image.link}}">{{rune.name}}
-                    </td>
-
-                </tr>
-                {% endfor %}
                 <hr>
 
-                {% endfor %}
-                </tbody>
-            </table>
 
+                <br>
+                <br>
+                <br>
 
-            <hr>
-
-
-            <br>
-            <br>
-            <br>
-
+            </div>
         </div>
 
-
-        <hr>
-        {{championName}}
-        <hr>
-        {{masteryscore}}
-        <hr>
+        < class="bot-page"><h2><span>Last match</span></h2>
         <p> match_info ID: {{match_info.id}}</p>
         <p> Version/Patch: {{match_info.version}}</p>
         <p>
@@ -111,41 +103,145 @@
             {% endfor %}</p>
 
 
+        <div class="table-responsive">
+            <table class="table">
+                 
+
+                <tbody>
+                <tr>
+                    <th scope="row">Red Team Bans</th>
+                    {% for ban in match_info.red_team.bans %}
+                    <td> {{ban.champion.name}}<img
+                            src="http://ddragon.leagueoflegends.com/cdn/6.22.1/img/champion/{{ban.champion.image.link}}">
+                    </td>
+                    {% endfor %}
+
+                </tr>
+                <tr>
+                    <th scope="row">Blue Team Bans</th>
+                    {% for ban in match_info.blue_team.bans %}
+                    <td> {{ban.champion.name}}<img
+                            src="http://ddragon.leagueoflegends.com/cdn/6.22.1/img/champion/{{ban.champion.image.link}}">
+                    </td>
+                    {% endfor %}
+                </tr>
+                </tbody>
+            </table>
+
+
+        </div>
+
+
         <hr>
         <h1>match participants</h1>
-        <p>
-            {% for participant in match_info.participants %}
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                <tr>    
+                    <th>Summoner Name</th>
+                    <th>Champ Name</th>
+                    <th>Winner</th>
+
+                    <th>Kills</th>
+                    <th>Deaths</th>
+                    <th>Assists</th>
+                    <th>KDA</th>
+                    <th>Minions</th>
+                    <th>Sum Spells</th>
+                    <!--<th>Champ Level</th>-->
+                    <th>Total Gold</th>
+                    <th>Final Item Build</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for participant in match_info.participants %}
+
+                {% if participant.stats.win|string() == 'True'%}
+                <tr style="background-color: rgba(30, 119, 255, 0.43);">
+                    {% else %}
+                <tr style="background-color: rgba(255, 102, 102, 0.64);">
+                    {% endif %}
+
+
+                    <!--<tr style="background-color: #ff6666;">-->
+                    <th class="tg-yw4l"><a
+                            href="{{url_for('summoner',region=region,sumName=participant.summoner_name)}}">{{participant.summoner_name}}</a>
+                    </th>
+                    <th class="tg-yw4l">
+                        <div class="items"><img
+                                src="http://ddragon.leagueoflegends.com/cdn/6.22.1/img/champion/{{participant.champion.image.link}}">
+                        </div>
+                        {{participant.champion.name}}
+                    </th>
+                    <th class="tg-yw4l">{{participant.stats.win}}</th>
+                    <!--<th class="tg-yw4l">-->
+                    <!--{{participant.side|string()|replace("Side.","")|title()}}-->
+                    <!--</th>-->
+                    <th class="tg-yw4l">{{participant.stats.kills}}</th>
+                    <th class="tg-yw4l">{{participant.stats.deaths}}</th>
+                    <th class="tg-yw4l">{{participant.stats.assists}}</th>
+                    <th class="tg-yw4l">{{participant.stats.kda}}</th>
+                    <th class="tg-yw4l">{{participant.stats.cs}}</th>
+                    <th class="tg-yw4l">
+                        <div class="items">
+                            <img
+                                    src="http://ddragon.leagueoflegends.com/cdn/6.22.1/img/spell/{{participant.summoner_spell_d.image.link}}">
+                            <img src="http://ddragon.leagueoflegends.com/cdn/6.22.1/img/spell/{{participant.summoner_spell_f.image.link}}">
+                        </div>
+                    </th>
+                    <!--<th class="tg-yw4l">{{participant.stats.champion_level}}</th>-->
+                    <th class="tg-yw4l">{{participant.stats.gold_earned}}</th>
+
+                    <th class="tg-yw4l">
+                        <div class="items">
+                            {% for item in participant.stats.items %}
+
+                            {% if item is not none %}
+                            <a href="{{url_for('items')}}#{{item.id}}">
+                                <img src="http://ddragon.leagueoflegends.com/cdn/6.22.1/img/item/{{item.image.link}}"></a>
+
+                            {%endif %}
+
+                            {% endfor %}
+                        </div>
+                    </th>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% for participant in match_info.participants %}
         <p>{{participant.champion.name}}</p>
         <p>
             <img src="http://ddragon.leagueoflegends.com/cdn/6.22.1/img/champion/{{participant.champion.image.link}}">
         </p>
-        <p>
-            <img src="http://ddragon.leagueoflegends.com/cdn/6.22.1/img/champion/{{participant.champion.image.sprite}}">
-        </p>
+
         <p> {{participant.summoner_name}}</p>
         <p> {{participant.stats.win}}</p>
         <p> {{participant.side}}</p>
-        <p> {{participant.stats.kills}}</p>
-        <p> {{participant.stats.deaths}}</p>
-        <p> {{participant.stats.assists}}</p>
-        <p> {{participant.stats.kda}}</p>
-        <p> {{participant.stats.cs}}</p>
+        <p> Kills: {{participant.stats.kills}}</p>
+        <p> Deaths: {{participant.stats.deaths}}</p>
+        <p> Assists: {{participant.stats.assists}}</p>
+        <p> KDA: {{participant.stats.kda}}</p>
+        <p> Minions Slain: {{participant.stats.cs}}</p>
         <p> {{participant.stats.cs.image}}</p>
-        <p> {{participant.summoner_spell_d}}</p>
-        <p> {{participant.summoner_spell_f}}</p>
+        <p>
+            <img src="http://ddragon.leagueoflegends.com/cdn/6.22.1/img/spell/{{participant.summoner_spell_d.image.link}}">
+            <img src="http://ddragon.leagueoflegends.com/cdn/6.22.1/img/spell/{{participant.summoner_spell_f.image.link}}">
+        </p>
         <p> {{participant.stats.champion_level}}</p>
         <p> {{participant.stats.first_blood}}</p>
-        <p> {{participant.stats.gold_earned}}</p>
-        <p> {{participant.stats.gold_spent}}</p>
+        <p> Total Gold earned:{{participant.stats.gold_earned}}</p>
+        <p> Gold spent: {{participant.stats.gold_spent}}</p>
 
 
         {% for item in participant.stats.items %}
 
         {% if item is not none %}
-        <p>
-        <p>
-            <img src="http://ddragon.leagueoflegends.com/cdn/6.22.1/img/item/{{item.image.link}}">
-        </p>
+
+        <img src="http://ddragon.leagueoflegends.com/cdn/6.22.1/img/item/{{item.image.link}}">
+
         {%endif %}
 
         {% endfor %}
@@ -160,10 +256,8 @@
         <hr>
 
 
-        </p>
-
-
     </div>
+</div>
 
 </div>
 

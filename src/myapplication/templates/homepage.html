@@ -1,63 +1,50 @@
-<div class="signup">
-    <h2>Sign Up</h2>
-    {% if err %}
-    <div class="err"><strong>Error:</strong> {{ err }}</div>
-    {% endif %}
+{% extends "header.html" %}
+{% block content %}
+<header class="siteheader clearfix" xmlns="http://www.w3.org/1999/html">
+    <img src="http://ddragon.leagueoflegends.com/cdn/img/champion/splash/Morgana_0.jpg">
+</header>
+<div class="spacer">&nbsp;
+</div>
 
-    {{json}}
-    <form class="form-horizontal" action='' method="post">
-        <fieldset>
-            <div class="control-group">
-                <!-- Username -->
-                <label class="control-label" for="username">Username</label>
-                <div class="controls">
-                    <input type="text" name="summonerName"
+<div class="col-sm-12 icara clearfix">
+    <div class="container">
+        <div class="bot-page">
+            <h2>Welcome to League of Stats</h2>
+            {% if err %}
+            <div class="err"><strong>Error:</strong> {{ err }}</div>
+            {% endif %}
+
+            {{json}}
+            <form class="form-inline" action='' method="post">
+
+                <div class="form-group">
+                    <label for="summonerName">Summoner Name</label>
+                    <input type="text" name="summonerName" class="form-control"
                            value="{{ request.form.summonerName }}">
-                    <p class="help-block">Username can contain any letters or numbers</p>
                 </div>
-            </div>
 
+                <div class="form-group">
 
-            <div class="form-group">
-                <label for="sel1">Select list:</label>
-                <select class="form-control" id="sel1" name="region">
-                    <option value="EUNE">EUNE</option>
-                    <option value="EUW">EUW</option>
-                    <option value="NA">NA</option>
-                </select>
+                    <select class="form-control" id="sel1" name="region">
+                        <option value="EUNE">EUNE</option>
+                        <option value="EUW">EUW</option>
+                        <option value="NA">NA</option>
+                    </select>
+                </div>
+                <input class="btn btn-primary" type="submit" value="Search">
+            </form>
+            <p>League of Stats is a League of Legends statistics prototype site We use the
+                latest database technology to provide users with:</p>
+            <ul class="list-group">
+                <li class="list-group-item">Match Results</li>
+                <li class="list-group-item">Profile Analytics</li>
+                <li class="list-group-item">Items</li>
+                <li class="list-group-item">and more to come</li>
+            </ul>
 
-            </div>
+        </div>
 
-            <!--<div class="control-group">-->
-                <!--&lt;!&ndash; E-mail &ndash;&gt;-->
-                <!--<label class="control-label" for="email">E-mail</label>-->
-                <!--<div class="controls">-->
-                    <!--<input type="text" name="email" value="{{ request.form.email }}">-->
-                    <!--<p class="help-block">Please provide your E-mail</p>-->
-                <!--</div>-->
-            <!--</div>-->
-
-            <!--<div class="control-group">-->
-                <!--&lt;!&ndash; Password&ndash;&gt;-->
-                <!--<label class="control-label" for="password">Password</label>-->
-                <!--<div class="controls">-->
-                    <!--<input type="password" name="password">-->
-                    <!--<p class="help-block">Please provide your password</p>-->
-                <!--</div>-->
-            <!--</div>-->
-
-            <!--<div class="control-group">-->
-                <!--&lt;!&ndash; Password2 &ndash;&gt;-->
-                <!--<label class="control-label" for="password_confirm">Password-->
-                    <!--(Confirm)</label>-->
-                <!--<div class="controls">-->
-                    <!--<input type="password" name="password2">-->
-                    <!--<p class="help-block">Please confirm password</p>-->
-                <!--</div>-->
-            <!--</div>-->
-            <div class="actions"><input type="submit" value="Sign Up"></div>
-
-        </fieldset>
+    </div>
 </div>
-</form>
-</div>
+
+{% endblock %}
