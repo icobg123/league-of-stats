@@ -143,7 +143,7 @@ table a {
 
 .spacer {
     width: 100%;
-    height: 35em;
+    height: 20em;
 }
 
 header.siteheader {
@@ -165,8 +165,8 @@ header.siteheader img {
     width: 100%;
     max-width: 1920px;
     background: linear-gradient(
-            rgba(0, 0, 0, 0.75),
-            rgba(0, 0, 0, 0.75)
+            rgba(0, 0, 0,0),
+            rgba(0, 0, 0, 0)
     ), url(../images/error.gif) repeat-x center top fixed;
     background-size: 100%;
     text-align: center;

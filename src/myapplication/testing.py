@@ -8,8 +8,6 @@ from flask import Flask, render_template, url_for, redirect, request, send_from_
     abort, \
     g, \
     flash, session
-from random import shuffle
-from riotwatcher import RiotWatcher, EUROPE_NORDIC_EAST
 from cassiopeia import riotapi
 from cassiopeia.type.core.common import LoadPolicy, StatSummaryType
 from cassiopeia.type.api.exception import APIError
@@ -170,8 +168,8 @@ class Matches(db.Model):
 db.drop_all()
 db.create_all()
 
+# enter all static item data in the database
 for item in datapoints.iteritems():
-    # print (item[1]['name'], item[1]['gold']['base'], item[1]['image']['full'])
 
     addItem = Items(id=item[0], itemName=item[1]['name'],
                     itemDescription=item[1]['description'],
@@ -186,7 +184,6 @@ def init(app):
     config_location = "etc/config.cfg"
     try:
         config.read(config_location)
-
         app.config['DEBUG'] = config.get("config", "debug")
         app.config['ip_address'] = config.get("config", "ip_address")
         app.config['port'] = config.get("config", "port")
@@ -212,12 +209,6 @@ def home():
 
     return render_template('homepage.html', err=err)
 
-
-@app.route('/json')
-def json():
-    return render_template('homepage.html', json=data)
-
-
 @app.route('/items')
 def items():
     itemQuery = Items.query.all()
@@ -240,14 +231,16 @@ def summoner(region, sumName):
 
     if exists is False:
         try:
+            # pull information about the summoner and store it in the db
             username = riotapi.get_summoner_by_name(sumName)
+
             addNewSumomner = Summoners(id=username.id, summonerName=username.name,
                                        summonerLevel=username.level,
                                        summonerIcon=username.profile_icon_id)
-
             db.session.add(addNewSumomner)
             db.session.commit()
 
+            # pull information about the rune pages of the summoner and store it in the db
             rune_pages = riotapi.get_rune_pages(username)
 
             # covert the results from the query into a dict with column names and value pairs
@@ -258,7 +251,7 @@ def summoner(region, sumName):
             match_list = username.match_list()
             match = match_list[0].match()
 
-            return render_template('testhomeSummoner.html', summoner=username,
+            return render_template('summonerPage.html', summoner=username,
                                    alreadyThere=alreadyThere,
                                    match_info=match,
                                    summonerData=summnersDic,
@@ -278,22 +271,15 @@ def summoner(region, sumName):
             query = Summoners.query.filter(
                 Summoners.summonerName.contains(sumName)).first()
 
-            # summnersDic = dict((col, getattr(query, col))
-            #                    for col in
-            #                    query.__table__.columns.keys())
 
-            summonerData = dict((row.summonerLevel, row)
-                                for row in
-                                db.session.query(Summoners).filter(
-                                    Summoners.summonerName.ilike(sumName)
-                                ))
             # covert the results from the query into a dict with column names and value pairs
             summnersDic = to_dict(query)
 
+            # gather the information about the last match of the summoner
             match_list = username.match_list()
             match = match_list[0].match()
 
-            return render_template('testhomeSummoner.html', summoner=username,
+            return render_template('summonerPage.html', summoner=username,
                                    alreadyThere=alreadyThere,
                                    match_info=match,
                                    summonerData=summnersDic,
@@ -310,7 +296,7 @@ def summoner(region, sumName):
 def page_not_found(error):
     return render_template('404.html', error=error, )
 
-
+# Convert flask sql alchemy queries to dictionaries
 def to_dict(model_instance, query_instance=None):
     if hasattr(model_instance, '__table__'):
         return {c.name: str(getattr(model_instance, c.name)) for c in
