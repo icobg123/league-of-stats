@@ -119,9 +119,16 @@ p {
     padding: 0px;
     vertical-align: middle;
 }
-table a{
+
+.match-info {
+ display: inline-block;
+    vertical-align: middle;
+}
+
+table a {
     color: black;
 }
+
 /*.bio h2::before {*/
 /*content: '';*/
 /*height: 1px;*/
