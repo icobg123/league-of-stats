@@ -1,0 +1,64 @@
+<div class="container">
+    <div class="bot-page">
+        <h2><span>A Legendary Story</span></h2>
+
+
+        <p>{{alreadyThere}}
+        <p>{{summonerData.name}}
+        <p>{{summonerData.id}}
+        <p>{{match_info}}
+        <p>
+        <hr>
+        <p>"Calculating K/D/A from the past {{matches}} matches..."</p>
+        <hr>
+
+        <hr>
+
+        <hr>
+        {% set kills = 0 %}
+        <hr>
+        {% set deaths = 0 %}
+        <hr>
+        {% set assists = 0 %}
+
+
+        {% for match in match_info.match %}
+        {% for participant in match.participants %}
+        {{participant.id}}
+        {% if participant.summoner_id == summonerData.id %}
+
+        <p>KILL ME</p>
+        {% set kills = kills+participant.stats.kills %}
+        {% set deaths = deaths+participant.stats.deaths %}
+        {% set assists = assists+participant.stats.assists %}
+        {% endif %}
+        {% set kda = (kills + assists) / deaths %}
+        {% endfor %}
+        <p> "Rolling K/D/A for {{summonerData.name}}: {{kills}}/{{deaths}}/{{assists}} ==
+            over most recent {{loop.index+1}} matches".</p>
+        {% endfor %}
+
+        <hr>
+
+        <hr>
+        <hr>
+        <hr>
+        <hr>
+        <hr>
+        <hr>
+        <hr>
+        <hr>
+        <hr>
+        <hr>
+        <hr>
+
+
+        <hr>
+
+        </p>
+
+
+    </div>
+
+</div>
+

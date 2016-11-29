@@ -1,22 +1,52 @@
+{% extends "header.html" %}
+{% block content %}
 <div class="container">
     <div class="bot-page">
-        <h2><span>A Legendary Story</span></h2>
+        <h2><span>The items of League of Legends</span></h2>
 
 
         <p>{{alreadyThere}}
+        <p>
         <hr>
-            {% for item in item_info %}
-        <hr>
-        {{item.itemName}}<br>
-        {{item.itemGold}}<br>
-        {{item.itemDescription}}<br><img src="http://ddragon.leagueoflegends.com/cdn/6.22.1/img/item/{{item.itemImage}}">
-        {{item.itemImage}}
+
+        <div class="table-responsive">
+            <table class="table">
+                 
+                <thead>
+                <tr>
+                       
+                    <th>ID</th>
+                    <th>PIC</th>
+                    <th>Name</th>
+                    <th>Cost</th>
+                    <th>Description</th>
+                </tr>
+                </thead>
+                {% for item in item_info|sort(attribute='itemName') %}
+                <tbody>
+                <tr>
+                    <td>{{item.id}}</td>
+                    <td><img
+                            src="http://ddragon.leagueoflegends.com/cdn/6.22.1/img/item/{{item.itemImage}}">
+                    </td>
+                    <td>{{item.itemName}}</td>
+                    <td>{{item.itemGold}}</td>
+                    <td>{{item.itemDescription}}</td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
 
 
-        {% endfor %}
+            <hr>
 
 
+            <br>
+            <br>
+            <br>
+
+        </div>
     </div>
 
 </div>
-
+{% endblock %}

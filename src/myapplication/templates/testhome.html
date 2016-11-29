@@ -1,3 +1,5 @@
+{% extends "header.html" %}
+{% block content %}
 <div class="container">
     <div class="bot-page">
         <h2><span>A Legendary Story</span></h2>
@@ -23,6 +25,7 @@
         <hr>
         <hr>
         <hr>
+        Information about your last match
         <p> match_info ID: {{match_info.id}}</p>
         <p> Version/Patch: {{match_info.version}}</p>
         <p>
@@ -42,19 +45,23 @@
 
         <p> Blue Team Bans:
             {% for ban in match_info.blue_team.bans %}
+            <img src="http://ddragon.leagueoflegends.com/cdn/6.22.1/img/champion/{{ban.champion.image.link}}">
+
             {{ban.champion.name}}
             {% endfor %}</p>
 
 
         <hr>
-        <h1>match participants</h1>
+        <h1>Last match information participants</h1>
         <p>
             {% for participant in match_info.participants %}
         <p>{{participant.champion.name}}</p>
         <p>
             <img src="http://ddragon.leagueoflegends.com/cdn/6.22.1/img/champion/{{participant.champion.image.link}}">
         </p>
-        <p><img src="http://ddragon.leagueoflegends.com/cdn/6.22.1/img/champion/{{participant.champion.image.sprite}}"></p>
+        <p>
+            <img src="http://ddragon.leagueoflegends.com/cdn/6.22.1/img/champion/{{participant.champion.image.sprite}}">
+        </p>
         <p> {{participant.summoner_name}}</p>
         <p> {{participant.stats.win}}</p>
         <p> {{participant.side}}</p>
@@ -176,3 +183,5 @@
 
 </div>
 
+
+{% endblock %}

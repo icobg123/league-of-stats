@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import sys
 import os
+import collections
 import urllib, json
 import ConfigParser
 from flask import Flask, render_template, url_for, redirect, request, send_from_directory, \
@@ -11,7 +12,7 @@ from random import shuffle
 from riotwatcher import RiotWatcher, EUROPE_NORDIC_EAST
 from cassiopeia import riotapi
 from cassiopeia.type.core.common import LoadPolicy, StatSummaryType
-
+from cassiopeia.type.api.exception import APIError
 from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
@@ -231,93 +232,87 @@ def items():
     return render_template('items.html', item_info=itemsD)
 
 
-@app.route('/items')
-def getLastMatch():
-    itemQuery = Items.query.all()
-    itemsD = {}
-    for item in itemQuery:
-        itemsD[item] = to_dict(item)
-
-    return render_template('items.html', item_info=itemsD)
-
-
 @app.route('/summoner/<region>/<sumName>')
 def summoner(region, sumName):
     riotapi.set_region(region)
+    riotapi.set_load_policy(LoadPolicy.eager)
     exists = db.session.query(Summoners.id).filter(
         Summoners.summonerName.ilike(sumName)).scalar() is not None
     alreadyThere = ''
     summonerData = []
 
     if exists is False:
-        username = riotapi.get_summoner_by_name(sumName)
-        addNewSumomner = Summoners(id=username.id, summonerName=username.name,
-                                   summonerLevel=username.level,
-                                   summonerIcon=username.profile_icon_id)
+        try:
+            username = riotapi.get_summoner_by_name(sumName)
+            addNewSumomner = Summoners(id=username.id, summonerName=username.name,
+                                       summonerLevel=username.level,
+                                       summonerIcon=username.profile_icon_id)
 
-        db.session.add(addNewSumomner)
-        db.session.commit()
+            db.session.add(addNewSumomner)
+            db.session.commit()
 
-        # rune_pages = riotapi.get_rune_pages(username)
+            rune_pages = riotapi.get_rune_pages(username)
 
-        #
-        # addRunePages = RunePages(id=rune_pages.id, runePageName=rune_pages.name,
-        #                          runePageCurrent=rune_pages.current,
-        #                          runePageRunes=rune_pages.rune, summonerID=username.id)
-        #
-        # db.session.add(addRunePages)
-        # db.session.commit()
+            # covert the results from the query into a dict with column names and value pairs
+            query = Summoners.query.filter_by(id=username.id).first()
 
-        # covert the results from the query into a dict with column names and value pairs
-        query = Summoners.query.filter_by(id=username.id).first()
+            summnersDic = to_dict(query)
 
-        itemQuery = Items.query.all()
+            match_list = username.match_list()
+            match = match_list[0].match()
 
-        summnersDic = to_dict(query)
-
-        d = {}
-        for item in itemQuery:
-            d[item] = to_dict(item)
-        # d = to_dict(itemQuery)
-
-        # for row in itemQuery:
-        #     d[row.] = row.__dict__
-        #
-        # itemsDic = dict(dict((col, getattr(itemQuery, col))
-        #                      for col in
-        #                      itemQuery.__table__.columns.keys()))
-
-        match_list = username.match_list()
-        match = match_list[0].match()
-
-        return render_template('testhome.html', summoner=username,
-                               alreadyThere=alreadyThere,
-                               match_info=match,
-                               summonerData=summnersDic,
-
-                               item_info=d)
-
+            return render_template('testhome.html', summoner=username,
+                                   alreadyThere=alreadyThere,
+                                   match_info=match,
+                                   summonerData=summnersDic,
+                                   rune_pages=rune_pages
+                                   )
+        except APIError as error:
+            if error.error_code in [404]:
+                return render_template('404.html', summoner=sumName)
     else:
 
         alreadyThere = 'They are there'
 
-        query = Summoners.query.filter(Summoners.summonerName.contains(sumName)).first()
+        try:
+            username = riotapi.get_summoner_by_name(sumName)
+            rune_pages = riotapi.get_rune_pages(username)
 
-        summnersDic = dict((col, getattr(query, col))
-                           for col in
-                           query.__table__.columns.keys())
+            query = Summoners.query.filter(
+                Summoners.summonerName.contains(sumName)).first()
 
-        summonerData = dict((row.summonerLevel, row)
-                            for row in
-                            db.session.query(Summoners).filter(
-                                Summoners.summonerName.ilike(sumName)
-                            ))
+            # summnersDic = dict((col, getattr(query, col))
+            #                    for col in
+            #                    query.__table__.columns.keys())
+
+            summonerData = dict((row.summonerLevel, row)
+                                for row in
+                                db.session.query(Summoners).filter(
+                                    Summoners.summonerName.ilike(sumName)
+                                ))
+            # covert the results from the query into a dict with column names and value pairs
+            summnersDic = to_dict(query)
+
+            match_list = username.match_list()
+            match = match_list[0].match()
+
+            return render_template('testhomeSummoner.html', summoner=username,
+                                   alreadyThere=alreadyThere,
+                                   match_info=match,
+                                   summonerData=summnersDic,
+                                   rune_pages=rune_pages
+                                   )
+        except APIError as error:
+            if error.error_code in [404]:
+                return render_template('404.html', summoner=sumName)
 
         # rune_pages = riotapi.get_rune_pages(username)
-        return render_template('testhomeSummoner.html', alreadyThere=alreadyThere,
-                               summonerData=summnersDic
-                               # rune_pages=rune_pages
-                               )
+
+
+
+@app.errorhandler(404)
+def page_not_found(error):
+    return render_template('404.html', error=error, )
 
 
 def to_dict(model_instance, query_instance=None):
