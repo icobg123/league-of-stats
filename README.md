@@ -1,7 +1,7 @@
-# CW2
-Code and report for the second coursework for advanced web technologies
+# lol-stats-in-game
 
-
+Code and report for a small Python/Flask project that utilises Riot Games' League of Legends API to 
+check if a player is in a game and then display statistics on the performance of each player with their currently selected champion
 
 # README #
 
