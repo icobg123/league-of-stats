@@ -1,13 +1,15 @@
 # lol-stats-in-game
 
-Code and report for a small Python/Flask project that utilises Riot Games' League of Legends API to 
-check if a player is in a game and then display statistics on the performance of each player with their currently selected champion
+Code and report for a small Python/Flask project that utilises Riot Games' League of Legends API.
+Users can view the basic information about the summoner name that they've searched for – The summoner name, the level of the account as well as the in-game icon of the profile. The page mentions the last champion that was played by that
+summoner and background of the page is the image of the last champion which the summoner has played.
+Currently the application displays information only about the last match which was played by the searched summoner. 
 
 # README #
 
 
 
-**CW2**
+**League of Stats**
 
 First redirect to CW2/src and check that you have all libraries installed, if not proceed to Step1, otherwise skip to Step2.
 
