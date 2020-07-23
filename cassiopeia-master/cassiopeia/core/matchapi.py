@@ -31,7 +31,7 @@ def get_match(id_, include_timeline=True, tournament_code=""):
     if cassiopeia.core.requests.load_policy is cassiopeia.type.core.common.LoadPolicy.eager:
         cassiopeia.riotapi.get_items() if match.item_ids else None
         cassiopeia.riotapi.get_champions() if match.champion_ids else None
-        cassiopeia.riotapi.get_masteries() if match.mastery_ids else None
+        cassiopeia.riotapi.get_mainies() if match.mainy_ids else None
         cassiopeia.riotapi.get_runes() if match.rune_ids else None
         summoner_ids = match.summoner_ids
         cassiopeia.riotapi.get_summoners_by_id(list(summoner_ids)) if summoner_ids else None
@@ -73,7 +73,7 @@ def get_matches(ids, include_timeline=True, tournament_code=""):
     if cassiopeia.core.requests.load_policy is cassiopeia.type.core.common.LoadPolicy.eager:
         item_ids = set()
         champion_ids = set()
-        mastery_ids = set()
+        mainy_ids = set()
         rune_ids = set()
         summoner_ids = set()
         summoner_spell_ids = set()
@@ -87,7 +87,7 @@ def get_matches(ids, include_timeline=True, tournament_code=""):
         if cassiopeia.core.requests.load_policy is cassiopeia.type.core.common.LoadPolicy.eager:
             item_ids = item_ids | match.data.item_ids
             champion_ids = champion_ids | match.data.champion_ids
-            mastery_ids = mastery_ids | match.data.mastery_ids
+            mainy_ids = mainy_ids | match.data.mainy_ids
             rune_ids = rune_ids | match.data.rune_ids
             summoner_ids = summoner_ids | match.data.summoner_ids
             summoner_spell_ids = summoner_spell_ids | match.data.summoner_spell_ids
@@ -96,7 +96,7 @@ def get_matches(ids, include_timeline=True, tournament_code=""):
     if cassiopeia.core.requests.load_policy is cassiopeia.type.core.common.LoadPolicy.eager:
         cassiopeia.riotapi.get_items() if item_ids else None
         cassiopeia.riotapi.get_champions() if champion_ids else None
-        cassiopeia.riotapi.get_masteries() if mastery_ids else None
+        cassiopeia.riotapi.get_mainies() if mainy_ids else None
         cassiopeia.riotapi.get_runes() if rune_ids else None
         cassiopeia.riotapi.get_summoners_by_id(list(summoner_ids)) if summoner_ids else None
         cassiopeia.riotapi.get_summoner_spells() if summoner_spell_ids else None

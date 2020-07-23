@@ -17,8 +17,8 @@
 #
 
 """
-This file contains the replication slave administration utility. It is used to
-perform replication operations on one or more slaves.
+This file contains the replication subordinate administration utility. It is used to
+perform replication operations on one or more subordinates.
 """
 
 from mysql.utilities.common.tools import check_python_version
@@ -53,7 +53,7 @@ from mysql.utilities.common.options import (add_failover_options,
 NAME = "MySQL Utilities - mysqlfailover "
 DESCRIPTION = ("mysqlfailover - automatic replication health monitoring and "
                "failover")
-USAGE = "%prog --master=root@localhost --discover-slaves-login=root " + \
+USAGE = "%prog --main=root@localhost --discover-subordinates-login=root " + \
         "--candidates=root@host123:3306,root@host456:3306 "
 _DATE_FORMAT = '%Y-%m-%d %H:%M:%S %p'
 _DATE_LEN = 22
@@ -132,7 +132,7 @@ if __name__ == '__main__':
     # Interval for continuous mode
     parser.add_option("--interval", "-i", action="store", dest="interval",
                       type="int", default="15",
-                      help="interval in seconds for polling the master for "
+                      help="interval in seconds for polling the main for "
                            "failure and reporting health. Default = 15 "
                            "seconds. Lowest value is 5 seconds.")
 
@@ -140,11 +140,11 @@ if __name__ == '__main__':
     parser.add_option("--failover-mode", "-f", action="store",
                       dest="failover_mode", type="choice", default="auto",
                       choices=["auto", "elect", "fail"],
-                      help="action to take when the master fails. 'auto' = "
-                           "automatically fail to best slave, 'elect' = fail "
+                      help="action to take when the main fails. 'auto' = "
+                           "automatically fail to best subordinate, 'elect' = fail "
                            "to candidate list or if no candidate meets "
                            "criteria fail, 'fail' = take no action and stop "
-                           "when master fails. Default = 'auto'.")
+                           "when main fails. Default = 'auto'.")
 
     # Add failover detection extension point
     parser.add_option("--exec-fail-check", action="store", dest="exec_fail",
@@ -155,9 +155,9 @@ if __name__ == '__main__':
     # Add force to override registry entry
     parser.add_option("--force", action="store_true", dest="force",
                       default=False,
-                      help="override the registration check on master for "
+                      help="override the registration check on main for "
                            "multiple instances of the console monitoring the "
-                           "same master.")
+                           "same main.")
 
     # Add refresh script external point
     parser.add_option("--exec-post-failover", action="store",
@@ -170,7 +170,7 @@ if __name__ == '__main__':
     parser.add_option("-p", "--pedantic", action="store_true", default=False,
                       dest="pedantic",
                       help="fail if some inconsistencies are found (e.g. "
-                           "errant transactions on slaves).")
+                           "errant transactions on subordinates).")
 
     # Add no keyboard input
     parser.add_option("--no-keyboard", action="store_true", default=False,
@@ -207,16 +207,16 @@ if __name__ == '__main__':
     parser.add_option("--connection-timeout", action="store", type="int",
                       dest = "conn_timeout", default = None, help = "set the "
                       "connection timeout for TCP and Unix socket "
-                      "connections for all master, slaves, and candidate "
-                      "slaves specified. Default is 10 as provided in the "
+                      "connections for all main, subordinates, and candidate "
+                      "subordinates specified. Default is 10 as provided in the "
                       "Connector/Python module.")
 
-    # Add master failover delay check
-    parser.add_option("--master-fail-retry", action="store", dest="fail_retry",
+    # Add main failover delay check
+    parser.add_option("--main-fail-retry", action="store", dest="fail_retry",
                       type="int", default=None, help="time in seconds to wait "
-                      "to determine master is down. The failover check will "
+                      "to determine main is down. The failover check will "
                       "be run again when the retry delay expires. Can be used "
-                      "to introduce a longer period between when master is "
+                      "to introduce a longer period between when main is "
                       "detected as unavailable to declaring it down. This "
                       "option is not used with --exec-fail-check. ")
 
@@ -235,9 +235,9 @@ if __name__ == '__main__':
     # Check security settings
     check_password_security(opt, args)
 
-    # Check slaves list
+    # Check subordinates list
     if opt.daemon != "stop":
-        check_server_lists(parser, opt.master, opt.slaves)
+        check_server_lists(parser, opt.main, opt.subordinates)
 
     # Check for errors
     if int(opt.interval) < 5:
@@ -252,29 +252,29 @@ if __name__ == '__main__':
     except ValueError:
         parser.error("The --timeout option requires an integer value.")
 
-    # if opt.master is None and opt.daemon and opt.daemon != "stop":
-    if opt.master is None and opt.daemon != "stop":
-        parser.error("You must specify a master to monitor.")
+    # if opt.main is None and opt.daemon and opt.daemon != "stop":
+    if opt.main is None and opt.daemon != "stop":
+        parser.error("You must specify a main to monitor.")
 
-    if opt.slaves is None and opt.discover is None and opt.daemon != "stop":
-        parser.error("You must supply a list of slaves or the "
-                     "--discover-slaves-login option.")
+    if opt.subordinates is None and opt.discover is None and opt.daemon != "stop":
+        parser.error("You must supply a list of subordinates or the "
+                     "--discover-subordinates-login option.")
 
     if opt.failover_mode == 'elect' and opt.candidates is None:
         parser.error("Failover mode = 'elect' requires at least one "
                      "candidate.")
 
     if opt.fail_retry and opt.exec_fail:
-        parser.error("The --master-fail-retry option cannot be used "
+        parser.error("The --main-fail-retry option cannot be used "
                      "with --exec-fail-check.")
 
     if opt.fail_retry and opt.fail_retry < 1:
-        parser.error("The --master-fail-retry option must be a positive "
+        parser.error("The --main-fail-retry option must be a positive "
                      "integer > 0.")
 
-    # Parse the master, slaves, and candidates connection parameters
+    # Parse the main, subordinates, and candidates connection parameters
     try:
-        master_val, slaves_val, candidates_val = parse_topology_connections(
+        main_val, subordinates_val, candidates_val = parse_topology_connections(
             opt)
     except UtilRplError:
         _, e, _ = sys.exc_info()
@@ -282,13 +282,13 @@ if __name__ == '__main__':
         sys.exit(1)
 
     # Check hostname alias
-    for slave_val in slaves_val:
-        if check_hostname_alias(master_val, slave_val):
-            parser.error("The master and one of the slaves are the same "
+    for subordinate_val in subordinates_val:
+        if check_hostname_alias(main_val, subordinate_val):
+            parser.error("The main and one of the subordinates are the same "
                          "host and port.")
     for cand_val in candidates_val:
-        if check_hostname_alias(master_val, cand_val):
-            parser.error("The master and one of the candidates are the same "
+        if check_hostname_alias(main_val, cand_val):
+            parser.error("The main and one of the candidates are the same "
                          "host and port.")
 
     # Create dictionary of options
@@ -400,7 +400,7 @@ if __name__ == '__main__':
         logging.info(MSG_UTILITIES_VERSION.format(utility=program,
                                                   version=VERSION_STRING))
     try:
-        rpl_cmds = RplCommands(master_val, slaves_val, options)
+        rpl_cmds = RplCommands(main_val, subordinates_val, options)
         if opt.daemon:
             rpl_cmds.auto_failover_as_daemon()
         else:

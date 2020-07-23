@@ -126,15 +126,15 @@ def get_challenger(queue_type):
     return cassiopeia.type.dto.league.League(cassiopeia.dto.requests.get(request, {"type": queue_type}))
 
 
-def get_master(queue_type):
+def get_main(queue_type):
     """
     https://developer.riotgames.com/api/methods#!/985/3354
 
     Args:
-        queue_type (str): the queue type to get the master league for ("RANKED_SOLO_5x5", "RANKED_TEAM_3x3", "RANKED_TEAM_5x5")
+        queue_type (str): the queue type to get the main league for ("RANKED_SOLO_5x5", "RANKED_TEAM_3x3", "RANKED_TEAM_5x5")
 
     Returns:
-        League: the master league
+        League: the main league
     """
-    request = "{version}/league/master".format(version=cassiopeia.dto.requests.api_versions["league"])
+    request = "{version}/league/main".format(version=cassiopeia.dto.requests.api_versions["league"])
     return cassiopeia.type.dto.league.League(cassiopeia.dto.requests.get(request, {"type": queue_type}))

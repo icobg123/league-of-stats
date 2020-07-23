@@ -15,7 +15,7 @@ if RIOT_API_KEY:
 non_existent_champion_id = 1000
 champion_id = 35
 champion_name = "Thresh"
-mastery_id = 6361
+mainy_id = 6361
 match_id = 1505030444
 rune_id = 5234
 summoner_id = 22508641

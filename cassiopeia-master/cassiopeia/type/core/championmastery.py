@@ -2,12 +2,12 @@ import datetime
 
 import cassiopeia.riotapi
 import cassiopeia.type.core.common
-import cassiopeia.type.dto.championmastery
+import cassiopeia.type.dto.championmainy
 
 
 @cassiopeia.type.core.common.inheritdocs
-class ChampionMastery(cassiopeia.type.core.common.CassiopeiaObject):
-    dto_type = cassiopeia.type.dto.championmastery.ChampionMastery
+class ChampionMainy(cassiopeia.type.core.common.CassiopeiaObject):
+    dto_type = cassiopeia.type.dto.championmainy.ChampionMainy
 
     def __str__(self):
         return "{champion} ({level})".format(champion=self.champion, level=self.level)
@@ -72,7 +72,7 @@ class ChampionMastery(cassiopeia.type.core.common.CassiopeiaObject):
     def summoner(self):
         """
         Returns:
-            Summoner: the player this mastery information is for
+            Summoner: the player this mainy information is for
         """
         return cassiopeia.riotapi.get_summoner_by_id(self.data.playerId) if self.data.playerId else None
 
@@ -80,7 +80,7 @@ class ChampionMastery(cassiopeia.type.core.common.CassiopeiaObject):
     def tokens_earned(self):
         """
         Returns:
-            int: number of tokens earned to next level mastery
+            int: number of tokens earned to next level mainy
         """
         return self.data.tokensEarned
 
@@ -90,4 +90,4 @@ class ChampionMastery(cassiopeia.type.core.common.CassiopeiaObject):
 ###############################
 
 def _sa_rebind_all():
-    ChampionMastery.dto_type = cassiopeia.type.dto.championmastery.ChampionMastery
+    ChampionMainy.dto_type = cassiopeia.type.dto.championmainy.ChampionMainy

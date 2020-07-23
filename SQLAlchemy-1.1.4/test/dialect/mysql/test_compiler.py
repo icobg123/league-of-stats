@@ -24,13 +24,13 @@ class CompileTest(fixtures.TestBase, AssertsCompiledSQL):
     def test_reserved_words(self):
         table = Table("mysql_table", MetaData(),
                       Column("col1", Integer),
-                      Column("master_ssl_verify_server_cert", Integer))
-        x = select([table.c.col1, table.c.master_ssl_verify_server_cert])
+                      Column("main_ssl_verify_server_cert", Integer))
+        x = select([table.c.col1, table.c.main_ssl_verify_server_cert])
 
         self.assert_compile(
             x,
             "SELECT mysql_table.col1, "
-            "mysql_table.`master_ssl_verify_server_cert` FROM mysql_table")
+            "mysql_table.`main_ssl_verify_server_cert` FROM mysql_table")
 
     def test_create_index_simple(self):
         m = MetaData()

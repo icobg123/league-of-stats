@@ -58,29 +58,29 @@ def get_summoners_by_id(summoner_ids):
     return response
 
 
-def get_summoner_masteries(summoner_ids):
+def get_summoner_mainies(summoner_ids):
     """
     https://developer.riotgames.com/api/methods#!/1017/3450
 
     Args:
-        summoner_ids (int | list<int>): the summoner ID(s) to get mastery pages for
+        summoner_ids (int | list<int>): the summoner ID(s) to get mainy pages for
 
     Returns:
-        dict<str, MasteryPages>: the requested summoners' mastery pages
+        dict<str, MainyPages>: the requested summoners' mainy pages
     """
     # Can only have 40 summoners max if it's a list
     if isinstance(summoner_ids, list) and len(summoner_ids) > 40:
-        raise ValueError("Can only get masteries for up to 40 summoners at once.")
+        raise ValueError("Can only get mainies for up to 40 summoners at once.")
 
     id_string = ",".join(str(x) for x in summoner_ids) if isinstance(summoner_ids, list) else str(summoner_ids)
 
     # Get JSON response
-    request = "{version}/summoner/{ids}/masteries".format(version=cassiopeia.dto.requests.api_versions["summoner"], ids=id_string)
+    request = "{version}/summoner/{ids}/mainies".format(version=cassiopeia.dto.requests.api_versions["summoner"], ids=id_string)
     response = cassiopeia.dto.requests.get(request)
 
     # Convert response to Dto type
-    for id_, masteries in response.items():
-        response[id_] = cassiopeia.type.dto.summoner.MasteryPages(masteries)
+    for id_, mainies in response.items():
+        response[id_] = cassiopeia.type.dto.summoner.MainyPages(mainies)
 
     return response
 

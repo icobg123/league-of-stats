@@ -48,14 +48,14 @@ _DELETE_FC_TABLE = ("DELETE FROM mysql.failover_console WHERE host = '{0}' "
 _FAILOVER_ERROR = ("{0}Check server for errors and run the mysqlrpladmin "
                    "utility to perform manual failover.")
 _FAILOVER_ERRNO = 911
-_ERRANT_TNX_ERROR = "Errant transaction(s) found on slave(s)."
+_ERRANT_TNX_ERROR = "Errant transaction(s) found on subordinate(s)."
 
 
 class FailoverDaemon(Daemon):
     """Automatic Failover Daemon
 
     This class implements a POSIX daemon, that logs information about the
-    master and the replication health for the topology.
+    main and the replication health for the topology.
     """
     def __init__(self, rpl, umask=0, chdir="/", stdin=None, stdout=None,
                  stderr=None):
@@ -85,13 +85,13 @@ class FailoverDaemon(Daemon):
         self.warnings_dic = {}
 
         # Callback methods for reading data
-        self.master = self.rpl.topology.master
+        self.main = self.rpl.topology.main
         self.get_health_data = self.rpl.topology.get_health
         self.get_gtid_data = self.rpl.topology.get_gtid_data
         self.get_uuid_data = self.rpl.topology.get_server_uuids
         self.list_data = None
 
-        self.master_gtids = []
+        self.main_gtids = []
         self.report_values = [
             report.lower() for report in
             self.options["report_values"].split(",")
@@ -167,21 +167,21 @@ class FailoverDaemon(Daemon):
                 raise UtilRplError(msg)
         return ([], [])
 
-    def _log_master_status(self):
-        """Logs the master information
+    def _log_main_status(self):
+        """Logs the main information
 
-        This method logs the master information from SHOW MASTER STATUS.
+        This method logs the main information from SHOW MASTER STATUS.
         """
-        # If no master present, don't print anything.
-        if self.master is None:
+        # If no main present, don't print anything.
+        if self.main is None:
             return
 
-        logging.info("Master Information")
+        logging.info("Main Information")
 
         try:
-            status = self.master.get_status()[0]
+            status = self.main.get_status()[0]
         except:
-            msg = "Cannot get master status"
+            msg = "Cannot get main status"
             self._report(msg, logging.ERROR)
             raise UtilRplError(msg)
 
@@ -195,18 +195,18 @@ class FailoverDaemon(Daemon):
         )
 
         # Display gtid executed set
-        self.master_gtids = []
+        self.main_gtids = []
         for gtid in status[4].split("\n"):
             if gtid:
                 # Add each GTID to a tuple to match the required format to
                 # print the full GRID list correctly.
-                self.master_gtids.append((gtid.strip(","),))
+                self.main_gtids.append((gtid.strip(","),))
 
         try:
-            if len(self.master_gtids) > 1:
-                gtid_executed = "{0}[...]".format(self.master_gtids[0][0])
+            if len(self.main_gtids) > 1:
+                gtid_executed = "{0}[...]".format(self.main_gtids[0][0])
             else:
-                gtid_executed = self.master_gtids[0][0]
+                gtid_executed = self.main_gtids[0][0]
         except IndexError:
             gtid_executed = "None"
 
@@ -227,19 +227,19 @@ class FailoverDaemon(Daemon):
             )
             logging.info(msg)
 
-    def _reconnect_master(self, pingtime=3):
-        """Tries to reconnect to the master
+    def _reconnect_main(self, pingtime=3):
+        """Tries to reconnect to the main
 
-        This method tries to reconnect to the master and if connection fails
+        This method tries to reconnect to the main and if connection fails
         after 3 attemps, returns False.
         """
-        if self.master and self.master.is_alive():
+        if self.main and self.main.is_alive():
             return True
         is_connected = False
         i = 0
         while i < 3:
             try:
-                self.master.connect()
+                self.main.connect()
                 is_connected = True
                 break
             except:
@@ -268,25 +268,25 @@ class FailoverDaemon(Daemon):
     def check_instance(self):
         """Check registration of the console
 
-        This method unregisters existing instances from slaves and attempts
-        to register the instance on the master. If there is already an
-        instance on the master, failover mode will be changed to 'fail'.
+        This method unregisters existing instances from subordinates and attempts
+        to register the instance on the main. If there is already an
+        instance on the main, failover mode will be changed to 'fail'.
         """
-        # Unregister existing instances from slaves
-        self._report("Unregistering existing instances from slaves.",
+        # Unregister existing instances from subordinates
+        self._report("Unregistering existing instances from subordinates.",
                      logging.INFO, False)
-        self.unregister_slaves(self.rpl.topology)
+        self.unregister_subordinates(self.rpl.topology)
 
         # Register instance
-        self._report("Registering instance on master.", logging.INFO, False)
+        self._report("Registering instance on main.", logging.INFO, False)
         old_mode = self.mode
         failover_mode = self.register_instance(self.force)
         if failover_mode != old_mode:
             # Turn on sys.stdout
             sys.stdout = self.rpl.stdout_copy
 
-            msg = ("Multiple instances of failover daemon found for master "
-                   "{0}:{1}.".format(self.master.host, self.master.port))
+            msg = ("Multiple instances of failover daemon found for main "
+                   "{0}:{1}.".format(self.main.host, self.main.port))
             self._report(msg, logging.WARN)
             print("If this is an error, restart the daemon with --force.")
             print("Failover mode changed to 'FAIL' for this instance.")
@@ -304,76 +304,76 @@ class FailoverDaemon(Daemon):
             time.sleep(1)
 
     def register_instance(self, clear=False, register=True):
-        """Register the daemon as running on the master.
+        """Register the daemon as running on the main.
 
         This method will attempt to register the daemon as running against
-        the master for failover modes auto or elect. If another daemon is
+        the main for failover modes auto or elect. If another daemon is
         already registered, this instance becomes blocked resulting in the
         mode change to 'fail' and failover will not occur when this instance
         of the daemon detects failover.
 
         clear[in]      if True, clear the sentinel database entries on the
-                       master. Default is False.
-        register[in]   if True, register the daemon on the master. If False,
-                       unregister the daemon on the master. Default is True.
+                       main. Default is False.
+        register[in]   if True, register the daemon on the main. If False,
+                       unregister the daemon on the main. Default is True.
 
         Returns string - new mode if changed
         """
-        # We cannot check disconnected masters and do not need to check if
+        # We cannot check disconnected mains and do not need to check if
         # we are doing a simple fail mode.
-        if self.master is None or self.mode == "fail":
+        if self.main is None or self.mode == "fail":
             return self.mode
 
         # Turn binary log off first
-        self.master.toggle_binlog("DISABLE")
+        self.main.toggle_binlog("DISABLE")
 
-        host_port = (self.master.host, self.master.port)
+        host_port = (self.main.host, self.main.port)
         # Drop the table if specified
         if clear:
-            self.master.exec_query(_DROP_FC_TABLE)
+            self.main.exec_query(_DROP_FC_TABLE)
 
         # Register the daemon
         if register:
-            res = self.master.exec_query(_CREATE_FC_TABLE)
-            res = self.master.exec_query(_SELECT_FC_TABLE.format(*host_port))
+            res = self.main.exec_query(_CREATE_FC_TABLE)
+            res = self.main.exec_query(_SELECT_FC_TABLE.format(*host_port))
             # COMMIT to close session before enabling binlog.
-            self.master.commit()
+            self.main.commit()
             if res != []:
                 # Someone beat us there. Drat.
                 self.old_mode = self.mode
                 self.mode = "fail"
             else:
                 # We're first! Yippee.
-                res = self.master.exec_query(
+                res = self.main.exec_query(
                     _INSERT_FC_TABLE.format(*host_port))
         # Unregister the daemon if our mode was changed
         elif self.old_mode != self.mode:
-            res = self.master.exec_query(_DELETE_FC_TABLE.format(*host_port))
+            res = self.main.exec_query(_DELETE_FC_TABLE.format(*host_port))
 
         # Turn binary log on
-        self.master.toggle_binlog("ENABLE")
+        self.main.toggle_binlog("ENABLE")
 
         return self.mode
 
-    def unregister_slaves(self, topology):
-        """Unregister the daemon as running on the slaves.
+    def unregister_subordinates(self, topology):
+        """Unregister the daemon as running on the subordinates.
 
         This method will unregister the daemon that was previously registered
-        on the slaves, for failover modes auto or elect.
+        on the subordinates, for failover modes auto or elect.
         """
-        if self.master is None or self.mode == "fail":
+        if self.main is None or self.mode == "fail":
             return
 
-        for slave_dict in topology.slaves:
-            # Skip unreachable/not connected slaves.
-            slave_instance = slave_dict["instance"]
-            if slave_instance and slave_instance.is_alive():
+        for subordinate_dict in topology.subordinates:
+            # Skip unreachable/not connected subordinates.
+            subordinate_instance = subordinate_dict["instance"]
+            if subordinate_instance and subordinate_instance.is_alive():
                 # Turn binary log off first
-                slave_instance.toggle_binlog("DISABLE")
+                subordinate_instance.toggle_binlog("DISABLE")
                 # Drop failover instance registration table.
-                slave_instance.exec_query(_DROP_FC_TABLE)
+                subordinate_instance.exec_query(_DROP_FC_TABLE)
                 # Turn binary log on
-                slave_instance.toggle_binlog("ENABLE")
+                subordinate_instance.toggle_binlog("ENABLE")
 
     def run(self):
         """Run automatic failover.
@@ -381,9 +381,9 @@ class FailoverDaemon(Daemon):
         This method implements the automatic failover facility. It the existing
         failover() method of the RplCommands class to conduct failover.
 
-        When the master goes down, the method can perform one of three actions:
+        When the main goes down, the method can perform one of three actions:
 
-        1) failover to list of candidates first then slaves
+        1) failover to list of candidates first then subordinates
         2) failover to list of candidates only
         3) fail
 
@@ -405,10 +405,10 @@ class FailoverDaemon(Daemon):
             self._report(msg, logging.CRITICAL)
             raise UtilRplError(msg)
 
-        # Require --master-info-repository=TABLE for all slaves
-        if not self.rpl.topology.check_master_info_type("TABLE"):
-            msg = ("Failover requires --master-info-repository=TABLE for "
-                   "all slaves.")
+        # Require --main-info-repository=TABLE for all subordinates
+        if not self.rpl.topology.check_main_info_type("TABLE"):
+            msg = ("Failover requires --main-info-repository=TABLE for "
+                   "all subordinates.")
             self._report(msg, logging.ERROR, False)
             raise UtilRplError(msg)
 
@@ -427,13 +427,13 @@ class FailoverDaemon(Daemon):
             self._report(no_exec_fail_msg, logging.CRITICAL, False)
             raise UtilRplError(no_exec_fail_msg)
 
-        # Check existence of errant transactions on slaves
+        # Check existence of errant transactions on subordinates
         errant_tnx = self.rpl.topology.find_errant_transactions()
         if errant_tnx:
             print("# WARNING: {0}".format(_ERRANT_TNX_ERROR))
             self._report(_ERRANT_TNX_ERROR, logging.WARN, False)
             for host, port, tnx_set in errant_tnx:
-                errant_msg = (" - For slave '{0}@{1}': "
+                errant_msg = (" - For subordinate '{0}@{1}': "
                               "{2}".format(host, port, ", ".join(tnx_set)))
                 print("# {0}".format(errant_msg))
                 self._report(errant_msg, logging.WARN, False)
@@ -455,15 +455,15 @@ class FailoverDaemon(Daemon):
         failover = False
 
         while not done:
-            # Use try block in case master class has gone away.
+            # Use try block in case main class has gone away.
             try:
-                old_host = self.rpl.master.host
-                old_port = self.rpl.master.port
+                old_host = self.rpl.main.host
+                old_port = self.rpl.main.port
             except:
                 old_host = "UNKNOWN"
                 old_port = "UNKNOWN"
 
-            # If a failover script is provided, check it else check master
+            # If a failover script is provided, check it else check main
             # using connectivity checks.
             if exec_fail is not None:
                 # Execute failover check script
@@ -484,38 +484,38 @@ class FailoverDaemon(Daemon):
                                      "Failover initiated", logging.WARN)
                         failover = True
             else:
-                # Check the master. If not alive, wait for pingtime seconds
+                # Check the main. If not alive, wait for pingtime seconds
                 # and try again.
-                if self.rpl.topology.master is not None and \
-                   not self.rpl.topology.master.is_alive():
-                    msg = ("Master may be down. Waiting for {0} seconds."
+                if self.rpl.topology.main is not None and \
+                   not self.rpl.topology.main.is_alive():
+                    msg = ("Main may be down. Waiting for {0} seconds."
                            "".format(pingtime))
                     self._report(msg, logging.INFO, False)
                     time.sleep(pingtime)
                     try:
-                        self.rpl.topology.master.connect()
+                        self.rpl.topology.main.connect()
                     except:
                         pass
 
-                # Check the master again. If no connection or lost connection,
+                # Check the main again. If no connection or lost connection,
                 # try ping. This performs the timeout threshold for detecting
-                # a down master. If still not alive, try to reconnect and if
+                # a down main. If still not alive, try to reconnect and if
                 # connection fails after 3 attempts, failover.
-                if self.rpl.topology.master is None or \
-                   not ping_host(self.rpl.topology.master.host, pingtime) or \
-                   not self.rpl.topology.master.is_alive():
+                if self.rpl.topology.main is None or \
+                   not ping_host(self.rpl.topology.main.host, pingtime) or \
+                   not self.rpl.topology.main.is_alive():
                     failover = True
-                    if self._reconnect_master(self.pingtime):
-                        failover = False  # Master is now connected again
+                    if self._reconnect_main(self.pingtime):
+                        failover = False  # Main is now connected again
                     if failover:
-                        self._report("Failed to reconnect to the master after "
+                        self._report("Failed to reconnect to the main after "
                                      "3 attemps.", logging.INFO)
 
             if failover:
-                self._report("Master is confirmed to be down or "
+                self._report("Main is confirmed to be down or "
                              "unreachable.", logging.CRITICAL, False)
                 try:
-                    self.rpl.topology.master.disconnect()
+                    self.rpl.topology.main.disconnect()
                 except:
                     pass
 
@@ -527,7 +527,7 @@ class FailoverDaemon(Daemon):
                     self._report("Failover starting in 'elect' mode...")
                     res = self.rpl.topology.failover(self.rpl.candidates, True)
                 else:
-                    msg = _FAILOVER_ERROR.format("Master has failed and "
+                    msg = _FAILOVER_ERROR.format("Main has failed and "
                                                  "automatic failover is "
                                                  "not enabled. ")
                     self._report(msg, logging.CRITICAL, False)
@@ -543,10 +543,10 @@ class FailoverDaemon(Daemon):
                     self.rpl.topology.run_script(post_fail, False,
                                                  [old_host, old_port])
                     raise UtilRplError(msg)
-                self.rpl.master = self.rpl.topology.master
-                self.master = self.rpl.master
-                self.rpl.topology.remove_discovered_slaves()
-                self.rpl.topology.discover_slaves()
+                self.rpl.main = self.rpl.topology.main
+                self.main = self.rpl.main
+                self.rpl.topology.remove_discovered_subordinates()
+                self.rpl.topology.discover_subordinates()
                 self.list_data = None
                 print("\nFailover daemon will restart in 5 seconds.")
                 time.sleep(5)
@@ -554,36 +554,36 @@ class FailoverDaemon(Daemon):
                 # Execute post failover script
                 self.rpl.topology.run_script(post_fail, False,
                                              [old_host, old_port,
-                                              self.rpl.master.host,
-                                              self.rpl.master.port])
+                                              self.rpl.main.host,
+                                              self.rpl.main.port])
 
-                # Unregister existing instances from slaves
-                self._report("Unregistering existing instances from slaves.",
+                # Unregister existing instances from subordinates
+                self._report("Unregistering existing instances from subordinates.",
                              logging.INFO, False)
-                self.unregister_slaves(self.rpl.topology)
+                self.unregister_subordinates(self.rpl.topology)
 
-                # Register instance on the new master
-                msg = ("Registering instance on new master "
-                       "{0}:{1}.").format(self.master.host, self.master.port)
+                # Register instance on the new main
+                msg = ("Registering instance on new main "
+                       "{0}:{1}.").format(self.main.host, self.main.port)
                 self._report(msg, logging.INFO, False)
 
                 failover_mode = self.register_instance()
 
-            # discover slaves if option was specified at startup
+            # discover subordinates if option was specified at startup
             elif (self.options.get("discover", None) is not None
                   and not first_pass):
-                # Force refresh of health list if new slaves found
-                if self.rpl.topology.discover_slaves():
+                # Force refresh of health list if new subordinates found
+                if self.rpl.topology.discover_subordinates():
                     self.list_data = None
 
-            # Check existence of errant transactions on slaves
+            # Check existence of errant transactions on subordinates
             errant_tnx = self.rpl.topology.find_errant_transactions()
             if errant_tnx:
                 if pedantic:
                     print("# WARNING: {0}".format(_ERRANT_TNX_ERROR))
                     self._report(_ERRANT_TNX_ERROR, logging.WARN, False)
                     for host, port, tnx_set in errant_tnx:
-                        errant_msg = (" - For slave '{0}@{1}': "
+                        errant_msg = (" - For subordinate '{0}@{1}': "
                                       "{2}".format(host, port,
                                                    ", ".join(tnx_set)))
                         print("# {0}".format(errant_msg))
@@ -603,17 +603,17 @@ class FailoverDaemon(Daemon):
                     self.add_warning("errant_tnx", warn_msg)
                     self._report(_ERRANT_TNX_ERROR, logging.WARN, False)
                     for host, port, tnx_set in errant_tnx:
-                        errant_msg = (" - For slave '{0}@{1}': "
+                        errant_msg = (" - For subordinate '{0}@{1}': "
                                       "{2}".format(host, port,
                                                    ", ".join(tnx_set)))
                         self._report(errant_msg, logging.WARN, False)
             else:
                 self.del_warning("errant_tnx")
 
-            if self.master and self.master.is_alive():
+            if self.main and self.main.is_alive():
                 # Log status
                 self._print_warnings()
-                self._log_master_status()
+                self._log_main_status()
 
                 self.list_data = []
                 if "health" in self.report_values:
@@ -633,14 +633,14 @@ class FailoverDaemon(Daemon):
                     if uuid_data:
                         self._log_data("UUID Status:", uuid_labels, uuid_data)
 
-            # Disconnect the master while waiting for the interval to expire
-            self.master.disconnect()
+            # Disconnect the main while waiting for the interval to expire
+            self.main.disconnect()
 
             # Wait for the interval to expire
             time.sleep(self.interval)
 
-            # Reconnect to the master
-            self._reconnect_master(self.pingtime)
+            # Reconnect to the main
+            self._reconnect_main(self.pingtime)
 
             first_pass = False
 

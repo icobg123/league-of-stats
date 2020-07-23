@@ -1,7 +1,7 @@
 """
 WARNING: Read this entire doc string before you run this program!
 
-This example is an extension of pull_master_tier.py, so you should look at that first.
+This example is an extension of pull_main_tier.py, so you should look at that first.
 This is the "spiderweb" match collection idea that is often suggested on the Riot API
 forums as the best way to collect a large number of matches.
 
@@ -18,7 +18,7 @@ eye on how large your database is getting! You may want to put a conditional bre
 somewhere in the code.
 
 In order for the algorithm to start, we need a match or a summoner to start the lookup. We
-first pull the Master tier and use those summoners as seed data. For the rest of the match
+first pull the Main tier and use those summoners as seed data. For the rest of the match
 collection.
 """
 
@@ -79,9 +79,9 @@ def main():
     db = SQLAlchemyDB("mysql+mysqlconnector", "databse_hostname", "database_name", "username", "password")
     riotapi.set_data_store(db)
 
-    # We will seed with all the summoners in Master's tier
-    unpulled_summoners = deque(entry.summoner for entry in riotapi.get_master())
-    print("Pulled Master tier for seeding. Got {0} summoners.".format(len(unpulled_summoners)))
+    # We will seed with all the summoners in Main's tier
+    unpulled_summoners = deque(entry.summoner for entry in riotapi.get_main())
+    print("Pulled Main tier for seeding. Got {0} summoners.".format(len(unpulled_summoners)))
 
     # We need this so that we don't get a recursive loop of summoners
     pulled_summoners = deque()

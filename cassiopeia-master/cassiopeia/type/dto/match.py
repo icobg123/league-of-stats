@@ -86,15 +86,15 @@ class MatchDetail(cassiopeia.type.dto.common.CassiopeiaDto):
         return ids
 
     @property
-    def mastery_ids(self):
+    def mainy_ids(self):
         """
         Gets all item IDs contained in this object
         """
         ids = set()
         for p in self.participants:
-            for m in p.masteries:
-                if m.masteryId:
-                    ids.add(m.masteryId)
+            for m in p.mainies:
+                if m.mainyId:
+                    ids.add(m.mainyId)
         return ids
 
     @property
@@ -142,7 +142,7 @@ class Participant(cassiopeia.type.dto.common.CassiopeiaDto):
     def __init__(self, dictionary):
         self.championId = dictionary.get("championId", 0)
         self.highestAchievedSeasonTier = dictionary.get("highestAchievedSeasonTier", "")
-        self.masteries = [(Mastery(m) if not isinstance(m, Mastery) else m) for m in dictionary.get("masteries", []) if m]
+        self.mainies = [(Mainy(m) if not isinstance(m, Mainy) else m) for m in dictionary.get("mainies", []) if m]
         self.participantId = dictionary.get("participantId", 0)
         self.runes = [(Rune(r) if not isinstance(r, Rune) else r) for r in dictionary.get("runes", []) if r]
         self.spell1Id = dictionary.get("spell1Id", 0)
@@ -168,7 +168,7 @@ class ParticipantIdentity(cassiopeia.type.dto.common.CassiopeiaDto):
 @cassiopeia.type.core.common.inheritdocs
 class Team(cassiopeia.type.dto.common.CassiopeiaDto):
     """
-    Gets all mastery IDs contained in this object
+    Gets all mainy IDs contained in this object
     """
     def __init__(self, dictionary):
         self.bans = [(BannedChampion(c) if not isinstance(c, BannedChampion) else c) for c in dictionary.get("bans", []) if c]
@@ -200,12 +200,12 @@ class Timeline(cassiopeia.type.dto.common.CassiopeiaDto):
 
 
 @cassiopeia.type.core.common.inheritdocs
-class Mastery(cassiopeia.type.dto.common.CassiopeiaDto):
+class Mainy(cassiopeia.type.dto.common.CassiopeiaDto):
     """
     Gets all summoner IDs contained in this object
     """
     def __init__(self, dictionary):
-        self.masteryId = dictionary.get("masteryId", 0)
+        self.mainyId = dictionary.get("mainyId", 0)
         self.rank = dictionary.get("rank", 0)
 
 
@@ -286,7 +286,7 @@ class ParticipantTimeline(cassiopeia.type.dto.common.CassiopeiaDto):
     Args:
         championId (int): champion ID
         highestAchievedSeasonTier (str): highest ranked tier achieved for the previous season, if any, otherwise null. Used to display border in game loading screen. (Legal values: CHALLENGER, MASTER, DIAMOND, PLATINUM, GOLD, SILVER, BRONZE, UNRANKED)
-        masteries (list<Mastery>): list of mastery information
+        mainies (list<Mainy>): list of mainy information
         participantId (int): participant ID
         runes (list<Rune>): list of rune information
         spell1Id (int): first summoner spell ID
@@ -406,8 +406,8 @@ class BannedChampion(cassiopeia.type.dto.common.CassiopeiaDto):
 class Frame(cassiopeia.type.dto.common.CassiopeiaDto):
     """
     Args:
-        masteryId (int): mastery ID
-        rank (int): mastery rank
+        mainyId (int): mainy ID
+        rank (int): mainy rank
     """
     def __init__(self, dictionary):
         self.events = [(Event(e) if not isinstance(e, Event) else e) for e in dictionary.get("events", []) if e]
@@ -617,7 +617,7 @@ def _sa_bind_participant():
         __tablename__ = "MatchParticipant"
         championId = sqlalchemy.Column(sqlalchemy.Integer)
         highestAchievedSeasonTier = sqlalchemy.Column(sqlalchemy.String(30))
-        masteries = sqlalchemy.orm.relationship("cassiopeia.type.dto.match.Mastery", cascade="all, delete-orphan", passive_deletes=True)
+        mainies = sqlalchemy.orm.relationship("cassiopeia.type.dto.match.Mainy", cascade="all, delete-orphan", passive_deletes=True)
         participantId = sqlalchemy.Column(sqlalchemy.Integer)
         runes = sqlalchemy.orm.relationship("cassiopeia.type.dto.match.Rune", cascade="all, delete-orphan", passive_deletes=True)
         spell1Id = sqlalchemy.Column(sqlalchemy.Integer)
@@ -677,13 +677,13 @@ def _sa_bind_timeline():
         _match_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("MatchDetail.matchId", ondelete="CASCADE"))
 
 
-def _sa_bind_mastery():
-    global Mastery
+def _sa_bind_mainy():
+    global Mainy
 
     @cassiopeia.type.core.common.inheritdocs
-    class Mastery(Mastery, cassiopeia.type.dto.common.BaseDB):
-        __tablename__ = "MatchMastery"
-        masteryId = sqlalchemy.Column(sqlalchemy.Integer)
+    class Mainy(Mainy, cassiopeia.type.dto.common.BaseDB):
+        __tablename__ = "MatchMainy"
+        mainyId = sqlalchemy.Column(sqlalchemy.Integer)
         rank = sqlalchemy.Column(sqlalchemy.Integer)
         _id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
         _participant_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("MatchParticipant._id", ondelete="CASCADE"))
@@ -935,7 +935,7 @@ def _sa_bind_all():
     _sa_bind_participant_identity()
     _sa_bind_team()
     _sa_bind_timeline()
-    _sa_bind_mastery()
+    _sa_bind_mainy()
     _sa_bind_participant_stats()
     _sa_bind_participant_timeline()
     _sa_bind_rune()

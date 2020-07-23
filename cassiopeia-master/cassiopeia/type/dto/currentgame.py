@@ -20,14 +20,14 @@ class Rune(cassiopeia.type.dto.common.CassiopeiaDto):
 
 
 @cassiopeia.type.core.common.inheritdocs
-class Mastery(cassiopeia.type.dto.common.CassiopeiaDto):
+class Mainy(cassiopeia.type.dto.common.CassiopeiaDto):
     """
     Args:
-        masteryId (int): the ID of the mastery
-        rank (int): the number of points put into this mastery by the user
+        mainyId (int): the ID of the mainy
+        rank (int): the number of points put into this mainy by the user
     """
     def __init__(self, dictionary):
-        self.masteryId = dictionary.get("masteryId", 0)
+        self.mainyId = dictionary.get("mainyId", 0)
         self.rank = dictionary.get("rank", 0)
 
 
@@ -47,7 +47,7 @@ class CurrentGameParticipant(cassiopeia.type.dto.common.CassiopeiaDto):
     Args:
         bot (bool): flag indicating whether or not this participant is a bot
         championId (int): the ID of the champion played by this participant
-        masteries (list<Mastery>): the masteries used by this participant
+        mainies (list<Mainy>): the mainies used by this participant
         profileIconId (int): the ID of the profile icon used by this participant
         runes (list<Rune>): the runes used by this participant
         spell1Id (int): the ID of the first summoner spell used by this participant
@@ -59,7 +59,7 @@ class CurrentGameParticipant(cassiopeia.type.dto.common.CassiopeiaDto):
     def __init__(self, dictionary):
         self.bot = dictionary.get("bot", False)
         self.championId = dictionary.get("championId", 0)
-        self.masteries = [(Mastery(mastery) if not isinstance(mastery, Mastery) else mastery) for mastery in dictionary.get("masteries", []) if mastery]
+        self.mainies = [(Mainy(mainy) if not isinstance(mainy, Mainy) else mainy) for mainy in dictionary.get("mainies", []) if mainy]
         self.profileIconId = dictionary.get("profileIconId", 0)
         self.runes = [(Rune(rune) if not isinstance(rune, Rune) else rune) for rune in dictionary.get("runes", []) if rune]
         self.spell1Id = dictionary.get("spell1Id", 0)
@@ -162,15 +162,15 @@ class CurrentGameInfo(cassiopeia.type.dto.common.CassiopeiaDto):
         return ids
 
     @property
-    def mastery_ids(self):
+    def mainy_ids(self):
         """
         Gets all champion IDs contained in this object
         """
         ids = set()
         for p in self.participants:
-            for m in p.masteries:
-                if m.masteryId:
-                    ids.add(m.masteryId)
+            for m in p.mainies:
+                if m.mainyId:
+                    ids.add(m.mainyId)
         return ids
 
 
@@ -189,13 +189,13 @@ def _sa_bind_rune():
         _participant_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("CurrentGameParticipant._id", ondelete="CASCADE"))
 
 
-def _sa_bind_mastery():
-    global Mastery
+def _sa_bind_mainy():
+    global Mainy
 
     @cassiopeia.type.core.common.inheritdocs
-    class Mastery(Mastery, cassiopeia.type.dto.common.BaseDB):
-        __tablename__ = "CurrentGameMastery"
-        masteryId = sqlalchemy.Column(sqlalchemy.Integer)
+    class Mainy(Mainy, cassiopeia.type.dto.common.BaseDB):
+        __tablename__ = "CurrentGameMainy"
+        mainyId = sqlalchemy.Column(sqlalchemy.Integer)
         rank = sqlalchemy.Column(sqlalchemy.Integer)
         _id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
         _participant_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("CurrentGameParticipant._id", ondelete="CASCADE"))
@@ -220,7 +220,7 @@ def _sa_bind_current_game_participant():
         __tablename__ = "CurrentGameParticipant"
         bot = sqlalchemy.Column(sqlalchemy.Boolean)
         championId = sqlalchemy.Column(sqlalchemy.Integer)
-        masteries = sqlalchemy.orm.relationship("cassiopeia.type.dto.currentgame.Mastery", cascade="all, delete-orphan", passive_deletes=True)
+        mainies = sqlalchemy.orm.relationship("cassiopeia.type.dto.currentgame.Mainy", cascade="all, delete-orphan", passive_deletes=True)
         profileIconId = sqlalchemy.Column(sqlalchemy.Integer)
         runes = sqlalchemy.orm.relationship("cassiopeia.type.dto.currentgame.Rune", cascade="all, delete-orphan", passive_deletes=True)
         spell1Id = sqlalchemy.Column(sqlalchemy.Integer)
@@ -266,7 +266,7 @@ def _sa_bind_current_game_info():
 
 def _sa_bind_all():
     _sa_bind_rune()
-    _sa_bind_mastery()
+    _sa_bind_mainy()
     _sa_bind_observer()
     _sa_bind_current_game_participant()
     _sa_bind_banned_champion()

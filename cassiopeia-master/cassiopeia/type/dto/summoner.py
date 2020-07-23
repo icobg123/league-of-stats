@@ -71,16 +71,16 @@ class RuneSlot(cassiopeia.type.dto.common.CassiopeiaDto):
 
 
 @cassiopeia.type.core.common.inheritdocs
-class MasteryPages(cassiopeia.type.dto.common.CassiopeiaDto):
+class MainyPages(cassiopeia.type.dto.common.CassiopeiaDto):
     """
     Gets all rune IDs contained in this object
     """
     def __init__(self, dictionary):
-        self.pages = [(MasteryPage(p) if not isinstance(p, MasteryPage) else p) for p in dictionary.get("pages", []) if p]
+        self.pages = [(MainyPage(p) if not isinstance(p, MainyPage) else p) for p in dictionary.get("pages", []) if p]
         self.summonerId = dictionary.get("summonerId", 0)
 
     @property
-    def mastery_ids(self):
+    def mainy_ids(self):
         """
         Args:
             runeId (int): rune ID associated with the rune slot. For static information correlating to rune IDs, please refer to the LoL Static Data API.
@@ -88,12 +88,12 @@ class MasteryPages(cassiopeia.type.dto.common.CassiopeiaDto):
         """
         ids = set()
         for p in self.pages:
-            ids = ids | p.mastery_ids
+            ids = ids | p.mainy_ids
         return ids
 
 
 @cassiopeia.type.core.common.inheritdocs
-class MasteryPage(cassiopeia.type.dto.common.CassiopeiaDto):
+class MainyPage(cassiopeia.type.dto.common.CassiopeiaDto):
     """
     Args:
         runeId (int): rune ID associated with the rune slot. For static information correlating to rune IDs, please refer to the LoL Static Data API.
@@ -102,28 +102,28 @@ class MasteryPage(cassiopeia.type.dto.common.CassiopeiaDto):
     def __init__(self, dictionary):
         self.current = dictionary.get("current", False)
         self.id = dictionary.get("id", 0)
-        self.masteries = [(Mastery(s) if not isinstance(s, Mastery) else s) for s in dictionary.get("masteries", []) if s]
+        self.mainies = [(Mainy(s) if not isinstance(s, Mainy) else s) for s in dictionary.get("mainies", []) if s]
         self.name = dictionary.get("name", "")
 
     @property
-    def mastery_ids(self):
+    def mainy_ids(self):
         """
         Args:
-            pages (list<MasteryPage>): collection of mastery pages associated with the summoner
+            pages (list<MainyPage>): collection of mainy pages associated with the summoner
             summonerId (int): summoner ID
         """
         ids = set()
-        for m in self.masteries:
+        for m in self.mainies:
             if m.id:
                 ids.add(m.id)
         return ids
 
 
 @cassiopeia.type.core.common.inheritdocs
-class Mastery(cassiopeia.type.dto.common.CassiopeiaDto):
+class Mainy(cassiopeia.type.dto.common.CassiopeiaDto):
     """
     Args:
-        pages (list<MasteryPage>): collection of mastery pages associated with the summoner
+        pages (list<MainyPage>): collection of mainy pages associated with the summoner
         summonerId (int): summoner ID
     """
     def __init__(self, dictionary):
@@ -134,7 +134,7 @@ class Mastery(cassiopeia.type.dto.common.CassiopeiaDto):
 @cassiopeia.type.core.common.inheritdocs
 class Summoner(cassiopeia.type.dto.common.CassiopeiaDto):
     """
-    Gets all mastery IDs contained in this object
+    Gets all mainy IDs contained in this object
     """
     def __init__(self, dictionary):
         self.id = dictionary.get("id", 0)
@@ -171,28 +171,28 @@ def _sa_bind_rune_slot():
         _page_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("RunePage.id", ondelete="CASCADE"))
 
 
-def _sa_bind_mastery_page():
-    global MasteryPage
+def _sa_bind_mainy_page():
+    global MainyPage
 
     @cassiopeia.type.core.common.inheritdocs
-    class MasteryPage(MasteryPage, cassiopeia.type.dto.common.BaseDB):
-        __tablename__ = "MasteryPage"
+    class MainyPage(MainyPage, cassiopeia.type.dto.common.BaseDB):
+        __tablename__ = "MainyPage"
         current = sqlalchemy.Column(sqlalchemy.Boolean)
         id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
-        masteries = sqlalchemy.orm.relationship("cassiopeia.type.dto.summoner.Mastery", cascade="all, delete-orphan, delete, merge", passive_deletes=True)
+        mainies = sqlalchemy.orm.relationship("cassiopeia.type.dto.summoner.Mainy", cascade="all, delete-orphan, delete, merge", passive_deletes=True)
         name = sqlalchemy.Column(sqlalchemy.String(50))
 
 
-def _sa_bind_mastery():
-    global Mastery
+def _sa_bind_mainy():
+    global Mainy
 
     @cassiopeia.type.core.common.inheritdocs
-    class Mastery(Mastery, cassiopeia.type.dto.common.BaseDB):
-        __tablename__ = "MasterySlot"
+    class Mainy(Mainy, cassiopeia.type.dto.common.BaseDB):
+        __tablename__ = "MainySlot"
         id = sqlalchemy.Column(sqlalchemy.Integer)
         rank = sqlalchemy.Column(sqlalchemy.Integer)
         _id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
-        _page_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("MasteryPage.id", ondelete="CASCADE"))
+        _page_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("MainyPage.id", ondelete="CASCADE"))
 
 
 def _sa_bind_summoner():
@@ -211,6 +211,6 @@ def _sa_bind_summoner():
 def _sa_bind_all():
     _sa_bind_rune_page()
     _sa_bind_rune_slot()
-    _sa_bind_mastery_page()
-    _sa_bind_mastery()
+    _sa_bind_mainy_page()
+    _sa_bind_mainy()
     _sa_bind_summoner()

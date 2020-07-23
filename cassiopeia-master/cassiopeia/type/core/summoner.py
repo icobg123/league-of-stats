@@ -72,20 +72,20 @@ class RunePage(cassiopeia.type.core.common.CassiopeiaObject):
 
 
 @cassiopeia.type.core.common.inheritdocs
-class MasteryPage(cassiopeia.type.core.common.CassiopeiaObject):
-    dto_type = cassiopeia.type.dto.summoner.MasteryPage
+class MainyPage(cassiopeia.type.core.common.CassiopeiaObject):
+    dto_type = cassiopeia.type.dto.summoner.MainyPage
 
     def __str__(self):
-        return "Mastery Page ({name})".format(name=self.name)
+        return "Mainy Page ({name})".format(name=self.name)
 
     def __iter__(self):
-        return iter(self.masteries)
+        return iter(self.mainies)
 
     def __len__(self):
-        return len(self.masteries)
+        return len(self.mainies)
 
     def __getitem__(self, index):
-        return self.masteries[index]
+        return self.mainies[index]
 
     def __eq__(self, other):
         return self.id == other.id
@@ -100,7 +100,7 @@ class MasteryPage(cassiopeia.type.core.common.CassiopeiaObject):
     def current(self):
         """
         Returns:
-            bool: whether or not this mastery page is active
+            bool: whether or not this mainy page is active
         """
         return self.data.current
 
@@ -108,28 +108,28 @@ class MasteryPage(cassiopeia.type.core.common.CassiopeiaObject):
     def id(self):
         """
         Returns:
-            int: the mastery page's id
+            int: the mainy page's id
         """
         return self.data.id
 
     @cassiopeia.type.core.common.lazyproperty
-    def masteries(self):
+    def mainies(self):
         """
         Returns:
-            list<Mastery>: this mastery page's masteries
+            list<Mainy>: this mainy page's mainies
         """
-        masteries = []
+        mainies = []
         ranks = []
-        for mastery in self.data.masteries.items():
-            masteries.append(mastery[0])
-            ranks.append(mastery[1])
-        return dict(zip(cassiopeia.riotapi.get_masteries(masteries), ranks))
+        for mainy in self.data.mainies.items():
+            mainies.append(mainy[0])
+            ranks.append(mainy[1])
+        return dict(zip(cassiopeia.riotapi.get_mainies(mainies), ranks))
 
     @property
     def name(self):
         """
         Returns:
-            str: the mastery page's name
+            str: the mainy page's name
         """
         return self.data.name
 
@@ -216,18 +216,18 @@ class Summoner(cassiopeia.type.core.common.CassiopeiaObject):
         return cassiopeia.riotapi.get_rune_pages(self)
 
     @cassiopeia.type.core.common.immutablemethod
-    def mastery_pages(self):
+    def mainy_pages(self):
         """
         Returns:
             list<Rune>: the runes in this rune page
         """
-        return cassiopeia.riotapi.get_mastery_pages(self)
+        return cassiopeia.riotapi.get_mainy_pages(self)
 
     @cassiopeia.type.core.common.immutablemethod
     def leagues(self):
         """
         Returns:
-            bool: whether or not this mastery page is active
+            bool: whether or not this mainy page is active
         """
         return cassiopeia.riotapi.get_leagues_by_summoner(self)
 
@@ -235,7 +235,7 @@ class Summoner(cassiopeia.type.core.common.CassiopeiaObject):
     def league_entries(self):
         """
         Returns:
-            int: the id of the mastery page for this summoner
+            int: the id of the mainy page for this summoner
         """
         return cassiopeia.riotapi.get_league_entries_by_summoner(self)
 
@@ -243,7 +243,7 @@ class Summoner(cassiopeia.type.core.common.CassiopeiaObject):
     def teams(self):
         """
         Returns:
-            list<Mastery>: this mastery page's masteries
+            list<Mainy>: this mainy page's mainies
         """
         return cassiopeia.riotapi.get_teams_by_summoner(self)
 
@@ -260,7 +260,7 @@ class Summoner(cassiopeia.type.core.common.CassiopeiaObject):
             seasons (Season | list<Season>): the season(s) to limit the results to (default None)
 
         Returns:
-            str: the name of this summoner's mastery page
+            str: the name of this summoner's mainy page
         """
         return cassiopeia.riotapi.get_match_list(self, num_matches, begin_index, begin_time, end_time, champions, ranked_queues, seasons)
 
@@ -281,38 +281,38 @@ class Summoner(cassiopeia.type.core.common.CassiopeiaObject):
         return cassiopeia.riotapi.get_stats(self, season)
 
     @cassiopeia.type.core.common.immutablemethod
-    def champion_mastery(self, champion):
+    def champion_mainy(self, champion):
         """
         Returns:
             int: the ID of the summoner icon associated with the summoner
         """
-        return cassiopeia.riotapi.get_champion_mastery(self, champion)
+        return cassiopeia.riotapi.get_champion_mainy(self, champion)
 
     @cassiopeia.type.core.common.immutablemethod
-    def champion_masteries(self):
+    def champion_mainies(self):
         """
         Returns:
             datetime: the date this summoner was last modified specified as epoch milliseconds. The following events will update this timestamp: profile icon change, playing the tutorial or advanced tutorial, finishing a game, summoner name change
         """
-        return cassiopeia.riotapi.get_champion_masteries(self)
+        return cassiopeia.riotapi.get_champion_mainies(self)
 
     @cassiopeia.type.core.common.immutablemethod
-    def champion_mastery_score(self):
+    def champion_mainy_score(self):
         """
         Returns:
             int: the Summoner's level
         """
-        return cassiopeia.riotapi.get_champion_mastery_score(self)
+        return cassiopeia.riotapi.get_champion_mainy_score(self)
 
     @cassiopeia.type.core.common.immutablemethod
-    def top_champion_masteries(self, max_entries=3):
+    def top_champion_mainies(self, max_entries=3):
         """
         Gets the game the summoner is currently in, if they're in one
 
         Returns:
             Game: the game they're in (or None if they aren't in one)
         """
-        return cassiopeia.riotapi.get_top_champion_masteries(self, max_entries)
+        return cassiopeia.riotapi.get_top_champion_mainies(self, max_entries)
 
 
 ###############################
@@ -320,5 +320,5 @@ class Summoner(cassiopeia.type.core.common.CassiopeiaObject):
 ###############################
 def _sa_rebind_all():
     RunePage.dto_type = cassiopeia.type.dto.summoner.RunePage
-    MasteryPage.dto_type = cassiopeia.type.dto.summoner.MasteryPage
+    MainyPage.dto_type = cassiopeia.type.dto.summoner.MainyPage
     Summoner.dto_type = cassiopeia.type.dto.summoner.Summoner

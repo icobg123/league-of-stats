@@ -14,8 +14,8 @@ def test_all():
     test_language_strings()
     test_languages()
     test_map_information()
-    test_mastery()
-    test_masteries()
+    test_mainy()
+    test_mainies()
     test_realm()
     test_rune()
     test_runes()
@@ -64,12 +64,12 @@ def test_map_information():
     int_test_handler.test_result(riotapi.get_map_information())
 
 
-def test_mastery():
-    int_test_handler.test_result(riotapi.get_mastery(int_test_handler.mastery_id))
+def test_mainy():
+    int_test_handler.test_result(riotapi.get_mainy(int_test_handler.mainy_id))
 
 
-def test_masteries():
-    int_test_handler.test_result(riotapi.get_masteries())
+def test_mainies():
+    int_test_handler.test_result(riotapi.get_mainies())
 
 
 def test_realm():

@@ -8,7 +8,7 @@ if cassiopeia.type.dto.common.sqlalchemy_imported:
 
 
 @cassiopeia.type.core.common.inheritdocs
-class ChampionMastery(cassiopeia.type.dto.common.CassiopeiaDto):
+class ChampionMainy(cassiopeia.type.dto.common.CassiopeiaDto):
     """
     Args:
         championId (int): champion ID for this entry
@@ -19,7 +19,7 @@ class ChampionMastery(cassiopeia.type.dto.common.CassiopeiaDto):
         chestGranted (bool): is chest granted for this champion or not in current season
         lastPlayTime (int): last time this champion was played by this player - in Unix milliseconds time format
         playerId (int): player ID for this entry
-        tokensEarned (int): number of token earned for next level mastery
+        tokensEarned (int): number of token earned for next level mainy
     """
     def __init__(self, dictionary):
         self.championId = dictionary.get("championId", 0)
@@ -36,12 +36,12 @@ class ChampionMastery(cassiopeia.type.dto.common.CassiopeiaDto):
 ###############################
 # Dynamic SQLAlchemy bindings #
 ###############################
-def _sa_bind_champion_mastery():
-    global ChampionMastery
+def _sa_bind_champion_mainy():
+    global ChampionMainy
 
     @cassiopeia.type.core.common.inheritdocs
-    class ChampionMastery(ChampionMastery, cassiopeia.type.dto.common.BaseDB):
-        __tablename__ = "ChampionMastery"
+    class ChampionMainy(ChampionMainy, cassiopeia.type.dto.common.BaseDB):
+        __tablename__ = "ChampionMainy"
         championId = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
         championLevel = sqlalchemy.Column(sqlalchemy.Integer)
         championPoints = sqlalchemy.Column(sqlalchemy.Integer)
@@ -54,4 +54,4 @@ def _sa_bind_champion_mastery():
 
 
 def _sa_bind_all():
-    _sa_bind_champion_mastery()
+    _sa_bind_champion_mainy()

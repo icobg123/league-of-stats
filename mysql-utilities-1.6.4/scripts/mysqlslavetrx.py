@@ -18,7 +18,7 @@
 
 """
 This file contains the replication synchronization checker utility. It is used
-to check the data consistency between master and slaves (and synchronize the
+to check the data consistency between main and subordinates (and synchronize the
 data if requested by the user).
 """
 
@@ -30,9 +30,9 @@ check_python_version()
 import os
 import sys
 
-from mysql.utilities.command.rpl_admin import skip_slaves_trx
+from mysql.utilities.command.rpl_admin import skip_subordinates_trx
 from mysql.utilities.common.messages import PARSE_ERR_OPTS_REQ
-from mysql.utilities.common.options import (add_slaves_option, add_verbosity,
+from mysql.utilities.common.options import (add_subordinates_option, add_verbosity,
                                             check_gtid_set_format,
                                             check_password_security,
                                             setup_common_options)
@@ -45,33 +45,33 @@ if not check_connector_python():
     sys.exit(1)
 
 # Constants
-NAME = "MySQL Utilities - mysqlslavetrx"
-DESCRIPTION = "mysqlslavetrx - skip transactions on slaves"
-USAGE = "%prog --gtid-set=gtid_set --slaves=user:pass@host:port"
+NAME = "MySQL Utilities - mysqlsubordinatetrx"
+DESCRIPTION = "mysqlsubordinatetrx - skip transactions on subordinates"
+USAGE = "%prog --gtid-set=gtid_set --subordinates=user:pass@host:port"
 EXTENDED_HELP = """
 Introduction
 ------------
-The mysqlslavetrx utility is designed to skip multiple transactions on slaves
+The mysqlsubordinatetrx utility is designed to skip multiple transactions on subordinates
 in a quick and easy way. More specifically, it injects empty transactions
-on the slaves for each GTID that will be skipped.
+on the subordinates for each GTID that will be skipped.
 
-The utility requires GTIDs to be enabled on all slaves. It does not require
+The utility requires GTIDs to be enabled on all subordinates. It does not require
 replication to be stopped. However, in some situation it is recommended.
-For example, in order to skip a transaction from the master  on a slave, that
-slave should be stopped otherwise the target transaction might still be
+For example, in order to skip a transaction from the main  on a subordinate, that
+subordinate should be stopped otherwise the target transaction might still be
 replicated (and not skipped).
 
 Note: Only transactions (GTIDs) that were not committed can be skipped, since
 two transactions cannot be applied with the same GTID. GTIDs already in the
-GTID_EXECUTED set of a slave will be ignored.
+GTID_EXECUTED set of a subordinate will be ignored.
 
 The utility requires the specification of the GTID set to skip and the list of
-target slaves as shown in the following example.
+target subordinates as shown in the following example.
 
-  # Skip the specified GTID set (three transaction: 10, 11, 12) on two slaves.
+  # Skip the specified GTID set (three transaction: 10, 11, 12) on two subordinates.
 
-  $ mysqlslavetrx --gtid-set=ee2655ae-2e88-11e4-b7a3-606720440b68:10-12 \\
-                  --slaves=rpl:pass@host2:3306,rpl:pass@host3:3306
+  $ mysqlsubordinatetrx --gtid-set=ee2655ae-2e88-11e4-b7a3-606720440b68:10-12 \\
+                  --subordinates=rpl:pass@host2:3306,rpl:pass@host3:3306
 
 Helpful Hints
 -------------
@@ -83,10 +83,10 @@ WARNING: Skipping transactions is a useful technique to recover from erroneous
 situations with replication. However, it must be applied with extreme caution
 and with full knowledge of its consequences as it might lead to data
 inconsistencies between the replication servers. For example, if a transaction
-that insert some data 'row1' in table 't1' fails on one slave and that
+that insert some data 'row1' in table 't1' fails on one subordinate and that
 transaction is skipped to solve the issue, then that data will be missing from
-the slave (and no longer replicated). As a consequence the data for table 't1'
-will be inconsistent with the one on the master and the other slaves because
+the subordinate (and no longer replicated). As a consequence the data for table 't1'
+will be inconsistent with the one on the main and the other subordinates because
 'row1' will be missing.
 
 """
@@ -103,14 +103,14 @@ if __name__ == '__main__':
                       help="set of Global Transaction Identifiers (GTID) to "
                            "skip.")
 
-    # Add the --slaves option.
-    add_slaves_option(parser)
+    # Add the --subordinates option.
+    add_subordinates_option(parser)
 
     # Add option for the dry run mode.
     parser.add_option("--dryrun", action="store_true", dest="dry_run",
                       default=False,
                       help="determine the transactions (GTID) to be skipped "
-                           "for each slave but without effectively skipping "
+                           "for each subordinate but without effectively skipping "
                            "them (injecting empty transactions) - useful to "
                            "test the transactions that would be skipped.")
 
@@ -123,19 +123,19 @@ if __name__ == '__main__':
     # Check security settings
     check_password_security(opt, args)
 
-    # Options --gtid-set and --slaves options are required.
+    # Options --gtid-set and --subordinates options are required.
     if not opt.gtid_set:
         parser.error(PARSE_ERR_OPTS_REQ.format(opt='--gtid-set'))
-    if not opt.slaves:
-        parser.error(PARSE_ERR_OPTS_REQ.format(opt='--slaves'))
+    if not opt.subordinates:
+        parser.error(PARSE_ERR_OPTS_REQ.format(opt='--subordinates'))
 
     # Check GTID set format.
     check_gtid_set_format(parser, opt.gtid_set)
 
-    # Parse the connection parameters for the slaves (no candidates).
+    # Parse the connection parameters for the subordinates (no candidates).
     try:
-        opt.master = None  # No master option available, set value to None.
-        _, slaves_val, _ = parse_topology_connections(
+        opt.main = None  # No main option available, set value to None.
+        _, subordinates_val, _ = parse_topology_connections(
             opt, parse_candidates=False
         )
     except UtilRplError:
@@ -149,9 +149,9 @@ if __name__ == '__main__':
         'dry_run': opt.dry_run,
     }
 
-    # Skip transactions for the given list of slaves.
+    # Skip transactions for the given list of subordinates.
     try:
-        skip_slaves_trx(opt.gtid_set, slaves_val, options)
+        skip_subordinates_trx(opt.gtid_set, subordinates_val, options)
     except UtilError:
         _, err, _ = sys.exc_info()
         sys.stderr.write("ERROR: {0}\n".format(err.errmsg))

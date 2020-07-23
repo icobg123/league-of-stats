@@ -1135,13 +1135,13 @@ class Table(object):
             indexes.append(index)
 
     @staticmethod
-    def __check_index(index, indexes, master_list):
+    def __check_index(index, indexes, main_list):
         """Check a single index for duplicate or redundancy against a list
         of other Indexes.
 
         index[in]          The Index to compare
         indexes[in]        A list of Index instances to compare
-        master_list[in]    A list of know duplicate Index instances
+        main_list[in]    A list of know duplicate Index instances
 
         Returns a tuple of whether duplicates are found and if found the
         list of duplicate indexes for this table
@@ -1158,7 +1158,7 @@ class Table(object):
                     # make sure we haven't already found this match
                     if not idx.column_subparts:
                         idx.compared = True
-                    if idx not in master_list:
+                    if idx not in main_list:
                         duplicates_found = True
                         # PRIMARY key can be identified as redundant of an
                         # unique index with more columns, in that case always
@@ -1496,12 +1496,12 @@ class Table(object):
             self.__print_index_list(self.fulltext_indexes, fmt, False,
                                     verbosity=verbosity)
         else:
-            master_indexes = []
-            master_indexes.extend(self.btree_indexes)
-            master_indexes.extend(self.hash_indexes)
-            master_indexes.extend(self.rtree_indexes)
-            master_indexes.extend(self.fulltext_indexes)
-            self.__print_index_list(master_indexes, fmt,
+            main_indexes = []
+            main_indexes.extend(self.btree_indexes)
+            main_indexes.extend(self.hash_indexes)
+            main_indexes.extend(self.rtree_indexes)
+            main_indexes.extend(self.fulltext_indexes)
+            self.__print_index_list(main_indexes, fmt,
                                     verbosity=verbosity)
         print "#"
 

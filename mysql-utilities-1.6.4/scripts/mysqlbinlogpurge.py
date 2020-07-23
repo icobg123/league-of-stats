@@ -36,9 +36,9 @@ from mysql.utilities.common.messages import (ERROR_MASTER_IN_SLAVES,
                                              PARSE_ERR_OPTS_REQ)
 from mysql.utilities.common.ip_parser import parse_connection
 from mysql.utilities.common.options import (add_verbosity,
-                                            add_discover_slaves_option,
-                                            add_master_option,
-                                            add_slaves_option,
+                                            add_discover_subordinates_option,
+                                            add_main_option,
+                                            add_subordinates_option,
                                             check_server_lists, get_ssl_dict,
                                             setup_common_options)
 from mysql.utilities.common.server import check_hostname_alias
@@ -54,8 +54,8 @@ if not check_connector_python():
 NAME = "MySQL Utilities - mysqlbinlogpurge "
 DESCRIPTION = "mysqlbinlogpurge - purges unnecessary binary log files"
 USAGE = (
-    "%prog --master=user:pass@host:port "
-    "--slaves=user:pass@host:port,user:pass@host:port"
+    "%prog --main=user:pass@host:port "
+    "--subordinates=user:pass@host:port,user:pass@host:port"
 )
 DATE_FORMAT = '%Y-%m-%d %H:%M:%S %p'
 EXTENDED_HELP = """
@@ -63,13 +63,13 @@ Introduction
 ------------
 The mysqlbinlogpurge utility was designed to purge binary log files in a
 replication scenario operating in a safe manner by prohibiting deletion of
-binary log files that are open or which are required by a slave (have not
-been read by the slave). The utility verifies the latest binary log file that
-has been read by all the slave servers to determine the binary log files that
+binary log files that are open or which are required by a subordinate (have not
+been read by the subordinate). The utility verifies the latest binary log file that
+has been read by all the subordinate servers to determine the binary log files that
 can be deleted.
 
 Note: In order to determine the latest binary log file that has been
-replicated by all the slaves, they must be connected to the master at the time
+replicated by all the subordinates, they must be connected to the main at the time
 the utility is executed.
 
 The following are examples of use:
@@ -79,9 +79,9 @@ The following are examples of use:
                      --binlog=bin-log.001302
 
   # Display the latest binary log that has been replicated by all specified
-  # slaves in a replication scenario.
-  $ mysqlbinlogpurge --master=root:pass@host2:3306 \\
-                     --slaves=root:pass@host3:3308,root:pass@host3:3309 \\
+  # subordinates in a replication scenario.
+  $ mysqlbinlogpurge --main=root:pass@host2:3306 \\
+                     --subordinates=root:pass@host3:3308,root:pass@host3:3309 \\
                      --dry-run
 """
 
@@ -104,14 +104,14 @@ if __name__ == '__main__':
                       "binary log files prior to the specified file will be "
                       "removed.")
 
-    # Add the --discover-slaves-login option.
-    add_discover_slaves_option(parser)
+    # Add the --discover-subordinates-login option.
+    add_discover_subordinates_option(parser)
 
-    # Add the --master option.
-    add_master_option(parser)
+    # Add the --main option.
+    add_main_option(parser)
 
-    # Add the --slaves option.
-    add_slaves_option(parser)
+    # Add the --subordinates option.
+    add_subordinates_option(parser)
 
     # Add verbosity
     add_verbosity(parser, quiet=False)
@@ -120,42 +120,42 @@ if __name__ == '__main__':
     opt, args = parser.parse_args()
 
     server_val = None
-    master_val = None
-    slaves_val = None
+    main_val = None
+    subordinates_val = None
 
-    if opt.server and opt.master:
+    if opt.server and opt.main:
         parser.error(PARSE_ERR_OPTS_EXCLD.format(opt1="--server",
-                                                 opt2="--master"))
+                                                 opt2="--main"))
 
-    if opt.master is None and opt.slaves:
-        parser.error(PARSE_ERR_OPT_REQ_OPT.format(opt="--slaves",
-                                                  opts="--master"))
+    if opt.main is None and opt.subordinates:
+        parser.error(PARSE_ERR_OPT_REQ_OPT.format(opt="--subordinates",
+                                                  opts="--main"))
 
-    if opt.master is None and opt.discover:
+    if opt.main is None and opt.discover:
         parser.error(
-            PARSE_ERR_OPT_REQ_OPT.format(opt="--discover-slaves-login",
-                                         opts="--master")
+            PARSE_ERR_OPT_REQ_OPT.format(opt="--discover-subordinates-login",
+                                         opts="--main")
         )
 
-    if opt.master and opt.slaves is None and opt.discover is None:
+    if opt.main and opt.subordinates is None and opt.discover is None:
         err_msg = PARSE_ERR_OPT_REQ_OPT.format(
-            opt="--master",
-            opts="--slaves or --discover-slaves-login",
+            opt="--main",
+            opts="--subordinates or --discover-subordinates-login",
         )
         parser.error(err_msg)
 
-    # Check mandatory options: --server or --master.
-    if not opt.server and not opt.master:
+    # Check mandatory options: --server or --main.
+    if not opt.server and not opt.main:
         parser.error(PARSE_ERR_OPTS_REQ.format(
-            opt="--server' or '--master"))
+            opt="--server' or '--main"))
 
-    # Check slaves list (master cannot be included in slaves list).
-    if opt.master:
-        check_server_lists(parser, opt.master, opt.slaves)
+    # Check subordinates list (main cannot be included in subordinates list).
+    if opt.main:
+        check_server_lists(parser, opt.main, opt.subordinates)
 
-        # Parse the master and slaves connection parameters (no candidates).
+        # Parse the main and subordinates connection parameters (no candidates).
         try:
-            master_val, slaves_val, _ = parse_topology_connections(
+            main_val, subordinates_val, _ = parse_topology_connections(
                 opt, parse_candidates=False
             )
         except UtilRplError:
@@ -163,16 +163,16 @@ if __name__ == '__main__':
             parser.error("ERROR: {0}\n".format(err.errmsg))
             sys.exit(1)
 
-        # Check host aliases (master cannot be included in slaves list).
-        if master_val:
-            for slave_val in slaves_val:
-                if check_hostname_alias(master_val, slave_val):
+        # Check host aliases (main cannot be included in subordinates list).
+        if main_val:
+            for subordinate_val in subordinates_val:
+                if check_hostname_alias(main_val, subordinate_val):
                     err = ERROR_MASTER_IN_SLAVES.format(
-                        master_host=master_val['host'],
-                        master_port=master_val['port'],
-                        slaves_candidates="slaves",
-                        slave_host=slave_val['host'],
-                        slave_port=slave_val['port'],
+                        main_host=main_val['host'],
+                        main_port=main_val['port'],
+                        subordinates_candidates="subordinates",
+                        subordinate_host=subordinate_val['host'],
+                        subordinate_port=subordinate_val['port'],
                     )
                     parser.error(err)
 
@@ -197,7 +197,7 @@ if __name__ == '__main__':
     }
 
     try:
-        binlog_purge(server_val, master_val, slaves_val, options)
+        binlog_purge(server_val, main_val, subordinates_val, options)
     except UtilError:
         _, e, _ = sys.exc_info()
         errmsg = e.errmsg.strip(" ")

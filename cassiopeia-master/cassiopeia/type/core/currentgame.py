@@ -29,17 +29,17 @@ class Participant(cassiopeia.type.core.common.CassiopeiaObject):
         return cassiopeia.riotapi.get_champion_by_id(self.data.championId) if self.data.championId else None
 
     @cassiopeia.type.core.common.lazyproperty
-    def masteries(self):
+    def mainies(self):
         """
         Returns:
-            list<Mastery>: the participant's masteries
+            list<Mainy>: the participant's mainies
         """
-        masteries = []
+        mainies = []
         ranks = []
-        for mastery in self.data.masteries:
-            masteries.append(mastery.masteryId)
-            ranks.append(mastery.rank)
-        return dict(zip(cassiopeia.riotapi.get_masteries(masteries), ranks))
+        for mainy in self.data.mainies:
+            mainies.append(mainy.mainyId)
+            ranks.append(mainy.rank)
+        return dict(zip(cassiopeia.riotapi.get_mainies(mainies), ranks))
 
     @property
     def profile_icon_id(self):

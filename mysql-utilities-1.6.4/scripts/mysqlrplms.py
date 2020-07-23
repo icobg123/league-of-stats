@@ -54,7 +54,7 @@ from mysql.utilities.command.setup_rpl import start_ms_replication
 # Constants
 NAME = "MySQL Utilities - mysqlrplms "
 DESCRIPTION = "mysqlrplms - establish multi-source replication"
-USAGE = ("%prog --slave=root@localhost:3306 --masters=root@localhost:3310,"
+USAGE = ("%prog --subordinate=root@localhost:3306 --mains=root@localhost:3310,"
          "root@localhost:3311 --rpl-user=rpl:passwd")
 DATE_FORMAT = '%Y-%m-%d %H:%M:%S %p'
 EXTENDED_HELP = """
@@ -62,49 +62,49 @@ Introduction
 ------------
 The mysqlrplms utility is used to setup round robin multi-source replcation.
 This technique can be a solution for aggregating streams of data from multiple
-masters for a single slave.
+mains for a single subordinate.
 
 The mysqlrplms utility follows these assumptions:
 
   - All servers have GTIDs enabled.
-  - There are no conflicts between transactions from different sources/masters.
-    For example, there are no updates to the same object from multiple masters.
+  - There are no conflicts between transactions from different sources/mains.
+    For example, there are no updates to the same object from multiple mains.
   - Replication is asynchronous.
 
-A round-robin scheduling is used to setup replication among the masters and
-slave.
+A round-robin scheduling is used to setup replication among the mains and
+subordinate.
 
 The utility can be run as a daemon on POSIX systems.
 
   # Basic multi-source replication setup.
 
-  $ mysqlrplms --slave=root:pass@host1:3306 \\
-               --masters=root:pass@host2:3306,root:pass@host3:3306
+  $ mysqlrplms --subordinate=root:pass@host1:3306 \\
+               --mains=root:pass@host2:3306,root:pass@host3:3306
 
   # Multi-source replication setup using a different report values.
 
-  $ mysqlrplms --slave=root:pass@host1:3306 \\
-               --masters=root:pass@host2:3306,root:pass@host3:3306 \\
+  $ mysqlrplms --subordinate=root:pass@host1:3306 \\
+               --mains=root:pass@host2:3306,root:pass@host3:3306 \\
                --report-values=health,gtid,uuid
 
   # Start multi-source replication running as a daemon. (POSIX only)
 
-  $ mysqlrplms --slave=root:pass@host1:3306 \\
-               --masters=root:pass@host2:3306,root:pass@host3:3306 \\
+  $ mysqlrplms --subordinate=root:pass@host1:3306 \\
+               --mains=root:pass@host2:3306,root:pass@host3:3306 \\
                --log=rplms_daemon.log --pidfile=rplms_daemon.pid \\
                --daemon=start
 
   # Restart a multi-source replication running as a daemon.
 
-  $ mysqlrplms --slave=root:pass@host1:3306 \\
-               --masters=root:pass@host2:3306,root:pass@host3:3306 \\
+  $ mysqlrplms --subordinate=root:pass@host1:3306 \\
+               --mains=root:pass@host2:3306,root:pass@host3:3306 \\
                --log=rplms_daemon.log --pidfile=rplms_daemon.pid \\
                --daemon=restart
 
   # Stop a multi-source replication running as a daemon.
 
-  $ mysqlrplms --slave=root:pass@host1:3306 \\
-               --masters=root:pass@host2:3306,root:pass@host3:3306 \\
+  $ mysqlrplms --subordinate=root:pass@host1:3306 \\
+               --mains=root:pass@host2:3306,root:pass@host3:3306 \\
                --log=rplms_daemon.log --pidfile=rplms_daemon.pid \\
                --daemon=stop
 
@@ -123,7 +123,7 @@ Helpful Hints
   - The default interval for reporting health is 15 seconds.
     This value can be changed with the --interval option.
 
-  - The default interval for switching masters is 60 seconds.
+  - The default interval for switching mains is 60 seconds.
     This value can be changed with the --switchover-interval option.
 
 """
@@ -147,28 +147,28 @@ if __name__ == '__main__':
                       "reporting health. Default = 15 seconds. "
                       "Lowest value is 5 seconds.")
 
-    # Interval for switching masters
+    # Interval for switching mains
     parser.add_option("--switchover-interval", action="store",
                       dest="switchover_interval",
                       type="int", default="60", help="interval in seconds for "
-                      "switching masters. Default = 60 seconds. "
+                      "switching mains. Default = 60 seconds. "
                       "Lowest value is 30 seconds.")
 
     # Connection information for the sink server
-    parser.add_option("--slave", action="store", dest="slave",
+    parser.add_option("--subordinate", action="store", dest="subordinate",
                       type="string", default=None,
-                      help="connection information for slave server in "
+                      help="connection information for subordinate server in "
                       "the form: <user>[:<password>]@<host>[:<port>]"
                       "[:<socket>] or <login-path>[:<port>][:<socket>]"
                       " or <config-path>[<[group]>]")
 
-    # Connection information for the masters servers
-    parser.add_option("--masters", action="store", dest="masters",
+    # Connection information for the mains servers
+    parser.add_option("--mains", action="store", dest="mains",
                       type="string", default=None, help="connection "
-                      "information for master servers in the form: "
+                      "information for main servers in the form: "
                       "<user>[:<password>]@<host>[:<port>][:<socket>] or "
                       "<login-path>[:<port>][:<socket>]"
-                      " or <config-path>[<[group]>]. List multiple master "
+                      " or <config-path>[<[group]>]. List multiple main "
                       "in comma-separated list.")
 
     # Replication user and password
@@ -178,7 +178,7 @@ if __name__ == '__main__':
     parser.add_option("-b", "--start-from-beginning", action="store_true",
                       default=False, dest="from_beginning",
                       help="start replication from the first event recorded "
-                      "in the binary logging of the masters.")
+                      "in the binary logging of the mains.")
 
     # Add report values
     parser.add_option("--report-values", action="store", dest="report_values",
@@ -241,13 +241,13 @@ if __name__ == '__main__':
         parser.error(PARSE_ERR_OPTS_REQ_GREATER_OR_EQUAL.format(
             opt="--switchover-interval", value=30))
 
-    # option --slave is required (mandatory)
-    if not opt.slave:
-        parser.error(PARSE_ERR_OPTS_REQ.format(opt="--slave"))
+    # option --subordinate is required (mandatory)
+    if not opt.subordinate:
+        parser.error(PARSE_ERR_OPTS_REQ.format(opt="--subordinate"))
 
-    # option --masters is required (mandatory)
-    if not opt.masters:
-        parser.error(PARSE_ERR_OPTS_REQ.format(opt="--masters"))
+    # option --mains is required (mandatory)
+    if not opt.mains:
+        parser.error(PARSE_ERR_OPTS_REQ.format(opt="--mains"))
 
     # option --rpl-user is required (mandatory)
     if not opt.rpl_user:
@@ -255,40 +255,40 @@ if __name__ == '__main__':
 
     config_reader = MyDefaultsReader(opt, False)
 
-    # Parse slave connection values
+    # Parse subordinate connection values
     try:
-        slave_vals = parse_connection(opt.slave, config_reader, opt)
+        subordinate_vals = parse_connection(opt.subordinate, config_reader, opt)
     except FormatError:
         _, err, _ = sys.exc_info()
-        parser.error("Slave connection values invalid: {0}.".format(err))
+        parser.error("Subordinate connection values invalid: {0}.".format(err))
     except UtilError:
         _, err, _ = sys.exc_info()
-        parser.error("Slave connection values invalid: {0}."
+        parser.error("Subordinate connection values invalid: {0}."
                      "".format(err.errmsg))
 
-    # Parse masters connection values
-    masters_vals = []
-    masters = opt.masters.split(",")
-    if len(masters) == 1:
-        parser.error("At least two masters are required for multi-source "
+    # Parse mains connection values
+    mains_vals = []
+    mains = opt.mains.split(",")
+    if len(mains) == 1:
+        parser.error("At least two mains are required for multi-source "
                      "replication.")
 
-    for master in masters:
+    for main in mains:
         try:
-            masters_vals.append(parse_connection(master, config_reader, opt))
+            mains_vals.append(parse_connection(main, config_reader, opt))
         except FormatError as err:
-            msg = ("Masters connection values invalid or cannot be parsed: "
-                   "{0} ({1})".format(master, err))
+            msg = ("Mains connection values invalid or cannot be parsed: "
+                   "{0} ({1})".format(main, err))
             raise UtilRplError(msg)
         except UtilError as err:
-            msg = ("Masters connection values invalid or cannot be parsed: "
-                   "{0} ({1})".format(master, err.errmsg))
+            msg = ("Mains connection values invalid or cannot be parsed: "
+                   "{0} ({1})".format(main, err.errmsg))
             raise UtilRplError(msg)
 
     # Check hostname alias
-    for master_vals in masters_vals:
-        if check_hostname_alias(slave_vals, master_vals):
-            parser.error("The master and slave are the same host and port.")
+    for main_vals in mains_vals:
+        if check_hostname_alias(subordinate_vals, main_vals):
+            parser.error("The main and subordinate are the same host and port.")
 
     # Check the daemon options
     if opt.daemon:
@@ -376,7 +376,7 @@ if __name__ == '__main__':
         logging.info(MSG_UTILITIES_VERSION.format(utility=program,
                                                   version=VERSION_STRING))
     try:
-        start_ms_replication(slave_vals, masters_vals, options)
+        start_ms_replication(subordinate_vals, mains_vals, options)
     except UtilError:
         _, e, _ = sys.exc_info()
         errmsg = e.errmsg.strip(" ")

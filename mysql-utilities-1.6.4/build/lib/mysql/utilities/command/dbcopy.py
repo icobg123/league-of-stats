@@ -26,7 +26,7 @@ from mysql.utilities.exception import UtilError
 from mysql.utilities.common.database import Database
 from mysql.utilities.common.options import check_engine_options
 from mysql.utilities.common.server import connect_servers
-from mysql.utilities.command.dbexport import (get_change_master_command,
+from mysql.utilities.command.dbexport import (get_change_main_command,
                                               get_copy_lock, get_gtid_commands)
 
 
@@ -334,7 +334,7 @@ def copy_db(src_val, dest_val, db_list, options):
         new_opts = options.copy()
         new_opts['multiline'] = False
         new_opts['strict'] = True
-        rpl_info = get_change_master_command(src_val, new_opts)
+        rpl_info = get_change_main_command(src_val, new_opts)
         destination.exec_query("STOP SLAVE", {'fetch': False, 'commit': False})
 
     # Copy (create) objects.

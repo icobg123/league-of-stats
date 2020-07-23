@@ -30,20 +30,20 @@ def get_challenger(queue_type=cassiopeia.type.core.common.Queue.ranked_solo):
     return cassiopeia.type.core.league.League(league)
 
 
-def get_master(queue_type=cassiopeia.type.core.common.Queue.ranked_solo):
+def get_main(queue_type=cassiopeia.type.core.common.Queue.ranked_solo):
     """
-    Gets the master league
+    Gets the main league
 
     Args:
-        queue_type (Queue): the queue to get the master league for (default Queue.ranked_solo)
+        queue_type (Queue): the queue to get the main league for (default Queue.ranked_solo)
 
     Returns:
-        League: the master league for that queue
+        League: the main league for that queue
     """
     if queue_type not in cassiopeia.type.core.common.ranked_queues:
         raise ValueError("Must use a ranked queue type to get ranked leagues")
 
-    league = cassiopeia.dto.leagueapi.get_master(queue_type.value)
+    league = cassiopeia.dto.leagueapi.get_main(queue_type.value)
 
     # Load required data if loading policy is eager
     if cassiopeia.core.requests.load_policy is cassiopeia.type.core.common.LoadPolicy.eager:

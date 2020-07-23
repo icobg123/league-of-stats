@@ -117,39 +117,39 @@ def get_maps():
     return cassiopeia.type.dto.staticdata.MapData(cassiopeia.dto.requests.get(request, params, True))
 
 
-def get_mastery(id_):
+def get_mainy(id_):
     """
     https://developer.riotgames.com/api/methods#!/968/3318
 
     Args:
-        id_ (int): the ID of the mastery to get
+        id_ (int): the ID of the mainy to get
 
     Returns:
-        Mastery: the mastery
+        Mainy: the mainy
     """
-    request = "{version}/mastery/{id_}".format(version=cassiopeia.dto.requests.api_versions["staticdata"], id_=id_)
+    request = "{version}/mainy/{id_}".format(version=cassiopeia.dto.requests.api_versions["staticdata"], id_=id_)
 
-    params = {"masteryData": "all"}
+    params = {"mainyData": "all"}
     if _locale:
         params["locale"] = _locale
 
-    return cassiopeia.type.dto.staticdata.Mastery(cassiopeia.dto.requests.get(request, params, True))
+    return cassiopeia.type.dto.staticdata.Mainy(cassiopeia.dto.requests.get(request, params, True))
 
 
-def get_masteries():
+def get_mainies():
     """
     https://developer.riotgames.com/api/methods#!/968/3317
 
     Returns:
-        MasteryList: all the masteries
+        MainyList: all the mainies
     """
-    request = "{version}/mastery".format(version=cassiopeia.dto.requests.api_versions["staticdata"])
+    request = "{version}/mainy".format(version=cassiopeia.dto.requests.api_versions["staticdata"])
 
-    params = {"masteryListData": "all"}
+    params = {"mainyListData": "all"}
     if _locale:
         params["locale"] = _locale
 
-    return cassiopeia.type.dto.staticdata.MasteryList(cassiopeia.dto.requests.get(request, params, True))
+    return cassiopeia.type.dto.staticdata.MainyList(cassiopeia.dto.requests.get(request, params, True))
 
 
 def get_realm():
