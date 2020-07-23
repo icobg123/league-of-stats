@@ -1,70 +1,70 @@
 import cassiopeia.riotapi
 import cassiopeia.core.requests
-import cassiopeia.dto.championmasteryapi
-import cassiopeia.type.core.championmastery
+import cassiopeia.dto.championmainyapi
+import cassiopeia.type.core.championmainy
 import cassiopeia.type.core.common
 
 
-def get_champion_mastery(summoner, champion):
+def get_champion_mainy(summoner, champion):
     """
-    Gets the ChampionMastery object for the specified summoner and champion
+    Gets the ChampionMainy object for the specified summoner and champion
 
     Args:
-        summoner (Summoner): the summoner to get champion mastery for
+        summoner (Summoner): the summoner to get champion mainy for
         champion (Champion): the desired champion
 
     Returns:
-        ChampionMastery: the summoner's champion mastery value for the specified champion
+        ChampionMainy: the summoner's champion mainy value for the specified champion
     """
-    champion_mastery = cassiopeia.dto.championmasteryapi.get_champion_mastery(summoner.id, champion.id)
-    return cassiopeia.type.core.championmastery.ChampionMastery(champion_mastery)
+    champion_mainy = cassiopeia.dto.championmainyapi.get_champion_mainy(summoner.id, champion.id)
+    return cassiopeia.type.core.championmainy.ChampionMainy(champion_mainy)
 
 
-def get_champion_masteries(summoner):
+def get_champion_mainies(summoner):
     """
-    Gets all the ChampionMastery objects for the specified summoner
+    Gets all the ChampionMainy objects for the specified summoner
 
     Args:
-        summoner (Summoner): the summoner to get champion mastery for
+        summoner (Summoner): the summoner to get champion mainy for
 
     Returns:
-        dict<Champion, ChampionMastery>: the summoner's champion masteries
+        dict<Champion, ChampionMainy>: the summoner's champion mainies
     """
-    champion_masteries = cassiopeia.dto.championmasteryapi.get_champion_masteries(summoner.id)
+    champion_mainies = cassiopeia.dto.championmainyapi.get_champion_mainies(summoner.id)
 
     # Always load champions since we'll be using them here
     cassiopeia.riotapi.get_champions()
-    return {cassiopeia.riotapi.get_champion_by_id(cm.championId): cassiopeia.type.core.championmastery.ChampionMastery(cm) for cm in champion_masteries}
+    return {cassiopeia.riotapi.get_champion_by_id(cm.championId): cassiopeia.type.core.championmainy.ChampionMainy(cm) for cm in champion_mainies}
 
 
-def get_champion_mastery_score(summoner):
+def get_champion_mainy_score(summoner):
     """
-    Gets the total champion mastery score for the specified summoner
+    Gets the total champion mainy score for the specified summoner
 
     Args:
-        summoner (Summoner): the summoner to get champion mastery for
+        summoner (Summoner): the summoner to get champion mainy for
 
     Returns:
-        int: the summoner's total champion mastery score
+        int: the summoner's total champion mainy score
     """
-    return cassiopeia.dto.championmasteryapi.get_champion_mastery_score(summoner.id)
+    return cassiopeia.dto.championmainyapi.get_champion_mainy_score(summoner.id)
 
 
-def get_top_champion_masteries(summoner, max_entries=3):
+def get_top_champion_mainies(summoner, max_entries=3):
     """
-    Gets the top ChampionMastery objects for the specified summoner
+    Gets the top ChampionMainy objects for the specified summoner
 
     Args:
-        summoner (Summoner): the summoner to get champion mastery for
+        summoner (Summoner): the summoner to get champion mainy for
         max_entries (int): the maximum number of entires to retrieve (default 3)
 
     Returns:
-        list<ChampionMastery>: the summoner's top champion masteries
+        list<ChampionMainy>: the summoner's top champion mainies
     """
-    champion_masteries = cassiopeia.dto.championmasteryapi.get_top_champion_masteries(summoner.id, max_entries)
+    champion_mainies = cassiopeia.dto.championmainyapi.get_top_champion_mainies(summoner.id, max_entries)
 
     # Load required data if loading policy is eager
-    if champion_masteries and cassiopeia.core.requests.load_policy is cassiopeia.type.core.common.LoadPolicy.eager:
+    if champion_mainies and cassiopeia.core.requests.load_policy is cassiopeia.type.core.common.LoadPolicy.eager:
         cassiopeia.riotapi.get_champions()
 
-    return [cassiopeia.type.core.championmastery.ChampionMastery(cm) for cm in champion_masteries]
+    return [cassiopeia.type.core.championmainy.ChampionMainy(cm) for cm in champion_mainies]

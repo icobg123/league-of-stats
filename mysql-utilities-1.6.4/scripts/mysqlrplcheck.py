@@ -18,7 +18,7 @@
 
 """
 This file contains the replicate utility. It is used to establish a
-master/slave replication topology among two servers.
+main/subordinate replication topology among two servers.
 """
 
 from mysql.utilities.common.tools import check_python_version
@@ -44,7 +44,7 @@ from mysql.utilities.common.messages import (PARSE_ERR_OPTS_REQ,
 # Constants
 NAME = "MySQL Utilities - mysqlrplcheck "
 DESCRIPTION = "mysqlrplcheck - check replication"
-USAGE = "%prog --master=root@localhost:3306 --slave=root@localhost:3310 "
+USAGE = "%prog --main=root@localhost:3306 --subordinate=root@localhost:3310 "
 
 PRINT_WIDTH = 75
 
@@ -60,34 +60,34 @@ if __name__ == '__main__':
     # Setup utility-specific options:
 
     # Connection information for the source server
-    parser.add_option('--master', action="store", dest="master",
+    parser.add_option('--main', action="store", dest="main",
                       type="string", default=None,
-                      help="connection information for master server in the "
+                      help="connection information for main server in the "
                            "form: <user>[:<password>]@<host>[:<port>]"
                            "[:<socket>] or <login-path>[:<port>][:<socket>]"
                            " or <config-path>[<[group]>].")
 
     # Connection information for the destination server
-    parser.add_option('--slave', action="store", dest="slave",
+    parser.add_option('--subordinate', action="store", dest="subordinate",
                       type="string", default=None,
-                      help="connection information for slave server in the "
+                      help="connection information for subordinate server in the "
                            "form: <user>[:<password>]@<host>[:<port>]"
                            "[:<socket>] or <login-path>[:<port>][:<socket>]"
                            " or <config-path>[<[group]>].")
 
-    # Add --master-info-file
-    parser.add_option("--master-info-file", action="store", dest="master_info",
-                      type="string", default="master.info",
-                      help="the name of the master information file on the "
-                           "slave. Default = 'master.info' read from the data "
+    # Add --main-info-file
+    parser.add_option("--main-info-file", action="store", dest="main_info",
+                      type="string", default="main.info",
+                      help="the name of the main information file on the "
+                           "subordinate. Default = 'main.info' read from the data "
                            "directory. Note: this option requires that the "
-                           "utility run on the slave with appropriate file "
+                           "utility run on the subordinate with appropriate file "
                            "read access to the data directory.")
 
-    # Add --show-slave-status
-    parser.add_option("--show-slave-status", "-s", action="store_true",
-                      dest="slave_status", default=False,
-                      help="show slave status")
+    # Add --show-subordinate-status
+    parser.add_option("--show-subordinate-status", "-s", action="store_true",
+                      dest="subordinate_status", default=False,
+                      help="show subordinate status")
 
     # Add display width option
     parser.add_option("--width", action="store", dest="width",
@@ -110,41 +110,41 @@ if __name__ == '__main__':
     # Check security settings
     check_password_security(opt, args)
 
-    # option --master is required (mandatory)
-    if not opt.master:
+    # option --main is required (mandatory)
+    if not opt.main:
         default_val = 'root@localhost:3306'
         print(WARN_OPT_USING_DEFAULT.format(default=default_val,
-                                            opt='--master'))
+                                            opt='--main'))
         # Print the WARNING to force determinism if a parser error occurs.
         sys.stdout.flush()
 
-    # option --slave is required (mandatory)
-    if not opt.slave:
-        parser.error(PARSE_ERR_OPTS_REQ.format(opt='--slave'))
+    # option --subordinate is required (mandatory)
+    if not opt.subordinate:
+        parser.error(PARSE_ERR_OPTS_REQ.format(opt='--subordinate'))
 
     # Parse source connection values
     try:
-        m_values = parse_connection(opt.master, options=opt)
+        m_values = parse_connection(opt.main, options=opt)
     except FormatError:
         _, err, _ = sys.exc_info()
-        parser.error("Master connection values invalid: %s." % err)
+        parser.error("Main connection values invalid: %s." % err)
     except UtilError:
         _, err, _ = sys.exc_info()
-        parser.error("Master connection values invalid: %s." % err.errmsg)
+        parser.error("Main connection values invalid: %s." % err.errmsg)
 
     # Parse source connection values
     try:
-        s_values = parse_connection(opt.slave, options=opt)
+        s_values = parse_connection(opt.subordinate, options=opt)
     except FormatError:
         _, err, _ = sys.exc_info()
-        parser.error("Slave connection values invalid: %s." % err)
+        parser.error("Subordinate connection values invalid: %s." % err)
     except UtilError:
         _, err, _ = sys.exc_info()
-        parser.error("Slave connection values invalid: %s." % err.errmsg)
+        parser.error("Subordinate connection values invalid: %s." % err.errmsg)
 
     # Check hostname alias
     if check_hostname_alias(m_values, s_values):
-        parser.error("The master and slave are the same host and port.")
+        parser.error("The main and subordinate are the same host and port.")
 
     # Create dictionary of options
     options = {
@@ -152,8 +152,8 @@ if __name__ == '__main__':
         'pedantic': False,
         'quiet': opt.quiet,
         'suppress': opt.suppress,
-        'master_info': opt.master_info,
-        'slave_status': opt.slave_status,
+        'main_info': opt.main_info,
+        'subordinate_status': opt.subordinate_status,
         'width': opt.width
     }
 

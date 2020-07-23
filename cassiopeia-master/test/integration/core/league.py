@@ -9,7 +9,7 @@ def test_all():
     test_leagues_by_team()
     test_league_entries_by_team()
     test_challenger()
-    test_master()
+    test_main()
 
 
 def test_leagues_by_summoner():
@@ -32,5 +32,5 @@ def test_challenger():
     int_test_handler.test_result(riotapi.get_challenger())
 
 
-def test_master():
-    int_test_handler.test_result(riotapi.get_master())
+def test_main():
+    int_test_handler.test_result(riotapi.get_main())

@@ -59,9 +59,9 @@ def get_binlog_info(server, reporter=None, server_name="server", verbosity=0):
         raise UtilError("Unable to get binlog information from {0} at {1}:{2}"
                         "".format(server_name, server.host, server.port))
     else:
-        master_active_binlog_file = res[0][0]
+        main_active_binlog_file = res[0][0]
 
-        master_active_binlog_index = int(res[0][0].split('.')[1])
+        main_active_binlog_index = int(res[0][0].split('.')[1])
 
         if binlog_b_name is None:
             binlog_b_name = res[0][0].split('.')[0]
@@ -72,49 +72,49 @@ def get_binlog_info(server, reporter=None, server_name="server", verbosity=0):
         if reporter is not None and verbosity > 0:
             reporter("# {server_name} active binlog file: {act_log}"
                      "".format(server_name=server_name.capitalize(),
-                               act_log=master_active_binlog_file))
+                               act_log=main_active_binlog_file))
 
-    return (binlog_b_name, master_active_binlog_file,
-            master_active_binlog_index)
+    return (binlog_b_name, main_active_binlog_file,
+            main_active_binlog_index)
 
 
-def determine_purgeable_binlogs(active_binlog_index, slaves, reporter,
+def determine_purgeable_binlogs(active_binlog_index, subordinates, reporter,
                                 verbosity=0):
     """Determine the purgeable binary logs.
 
-    This method will look at each slave given and will determinate the lowest
+    This method will look at each subordinate given and will determinate the lowest
     binary log file that is being in use.
 
     active_binlog_index[in]    Index of binlog currently in use by the
-                               master server or the higher binlog index value
+                               main server or the higher binlog index value
                                it wants to be purged.
-    slaves[in]                 Slaves list.
+    subordinates[in]                 Subordinates list.
     reporter[in]               Method to call to report.
     verbosity[in]              The verbosity level for reporting information.
 
-    Returns the last index in use by the slaves, that is the newest binlog
-    index that has between read by all the slave servers.
+    Returns the last index in use by the subordinates, that is the newest binlog
+    index that has between read by all the subordinate servers.
     """
     # Determine old no needed binlogs
-    master_log_file_in_use = []
+    main_log_file_in_use = []
     index_last_in_use = active_binlog_index
 
-    if slaves:
-        for slave in slaves:
+    if subordinates:
+        for subordinate in subordinates:
             if reporter is not None and verbosity >= 1:
-                reporter("# Checking slave: {0}@{1}"
-                         "".format(slave['host'], slave['port']))
+                reporter("# Checking subordinate: {0}@{1}"
+                         "".format(subordinate['host'], subordinate['port']))
 
-            res = slave['instance'].get_status()
+            res = subordinate['instance'].get_status()
 
             if res:
-                master_log_file = res[0][5]
+                main_log_file = res[0][5]
 
                 if reporter is not None and verbosity >= 1:
                     reporter("# I/O thread is currently reading: {0}"
-                             "".format(master_log_file))
-                master_log_file_in_use.append(master_log_file)
-                reading_index_file = int(master_log_file.split('.')[1])
+                             "".format(main_log_file))
+                main_log_file_in_use.append(main_log_file)
+                reading_index_file = int(main_log_file.split('.')[1])
 
                 if index_last_in_use > reading_index_file:
                     index_last_in_use = reading_index_file
@@ -122,7 +122,7 @@ def determine_purgeable_binlogs(active_binlog_index, slaves, reporter,
                 if reporter is not None and verbosity >= 2:
                     reporter("# File position of the I/O thread: {0}"
                              "".format(res[0][6]))
-                    reporter("# Master binlog file with last event executed "
+                    reporter("# Main binlog file with last event executed "
                              "by the SQL thread: {0}".format(res[0][9]))
                     reporter("# I/O thread running: {0}".format(res[0][10]))
                     reporter("# SQL thread running: {0}".format(res[0][11]))
@@ -135,7 +135,7 @@ def determine_purgeable_binlogs(active_binlog_index, slaves, reporter,
                                      "".format(res[0][52]))
         return index_last_in_use
     else:
-        raise UtilError("None Slave is connected to master")
+        raise UtilError("None Subordinate is connected to main")
 
 
 def purge(server, purge_to_binlog, server_binlogs_list=None,

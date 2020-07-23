@@ -18,7 +18,7 @@
 
 """
 This file contains the replicate utility. It is used to establish a
-master/slave replication topology among two servers.
+main/subordinate replication topology among two servers.
 """
 
 from mysql.utilities.exception import UtilError
@@ -27,12 +27,12 @@ from mysql.utilities.common.replication import Replication
 from mysql.utilities.common.replication_ms import ReplicationMultiSource
 
 
-def setup_replication(master_vals, slave_vals, rpl_user,
+def setup_replication(main_vals, subordinate_vals, rpl_user,
                       options, test_db=None):
-    """Setup replication among a master and a slave.
+    """Setup replication among a main and a subordinate.
 
-    master_vals[in]    Master connection in form user:passwd@host:port:sock
-    slave_vals[in]     Slave connection in form user:passwd@host:port:sock
+    main_vals[in]    Main connection in form user:passwd@host:port:sock
+    subordinate_vals[in]     Subordinate connection in form user:passwd@host:port:sock
     rpl_user[in]       Replication user in the form user:passwd
     options[in]        dictionary of options (verbosity, quiet, pedantic)
     test_db[in]        Test replication using this database name (optional)
@@ -41,28 +41,28 @@ def setup_replication(master_vals, slave_vals, rpl_user,
     verbosity = options.get("verbosity", 0)
 
     conn_options = {
-        'src_name': "master",
-        'dest_name': 'slave',
+        'src_name': "main",
+        'dest_name': 'subordinate',
         'version': "5.0.0",
         'unique': True,
     }
-    servers = connect_servers(master_vals, slave_vals, conn_options)
-    master = servers[0]
-    slave = servers[1]
+    servers = connect_servers(main_vals, subordinate_vals, conn_options)
+    main = servers[0]
+    subordinate = servers[1]
 
     rpl_options = options.copy()
     rpl_options['verbosity'] = verbosity > 0
 
     # Create an instance of the replication object
-    rpl = Replication(master, slave, rpl_options)
+    rpl = Replication(main, subordinate, rpl_options)
     errors = rpl.check_server_ids()
     for error in errors:
         print error
 
     # Check for server_id uniqueness
     if verbosity > 0:
-        print "# master id = %s" % master.get_server_id()
-        print "#  slave id = %s" % slave.get_server_id()
+        print "# main id = %s" % main.get_server_id()
+        print "#  subordinate id = %s" % subordinate.get_server_id()
 
     errors = rpl.check_server_uuids()
     for error in errors:
@@ -70,8 +70,8 @@ def setup_replication(master_vals, slave_vals, rpl_user,
 
     # Check for server_uuid uniqueness
     if verbosity > 0:
-        print "# master uuid = %s" % master.get_server_uuid()
-        print "#  slave uuid = %s" % slave.get_server_uuid()
+        print "# main uuid = %s" % main.get_server_uuid()
+        print "#  subordinate uuid = %s" % subordinate.get_server_uuid()
 
     # Check InnoDB compatibility
     if verbosity > 0:
@@ -89,9 +89,9 @@ def setup_replication(master_vals, slave_vals, rpl_user,
     for error in errors:
         print error
 
-    # Check master for binary logging
-    print "# Checking for binary logging on master..."
-    errors = rpl.check_master_binlog()
+    # Check main for binary logging
+    print "# Checking for binary logging on main..."
+    errors = rpl.check_main_binlog()
     if not errors == []:
         raise UtilError(errors[0])
 
@@ -107,14 +107,14 @@ def setup_replication(master_vals, slave_vals, rpl_user,
     print "# ...done."
 
 
-def start_ms_replication(slave_vals, masters_vals, options):
-    """Setup replication among a slave and multiple masters.
+def start_ms_replication(subordinate_vals, mains_vals, options):
+    """Setup replication among a subordinate and multiple mains.
 
-    slave_vals[in]     Slave server connection dictionary.
-    master_vals[in]    List of master server connection dictionaries.
+    subordinate_vals[in]     Subordinate server connection dictionary.
+    main_vals[in]    List of main server connection dictionaries.
     options[in]        Options dictionary.
     """
-    rplms = ReplicationMultiSource(slave_vals, masters_vals, options)
+    rplms = ReplicationMultiSource(subordinate_vals, mains_vals, options)
     daemon = options.get("daemon", None)
     if daemon == "start":
         rplms.start()

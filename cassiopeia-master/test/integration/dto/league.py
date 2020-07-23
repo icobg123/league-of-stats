@@ -9,7 +9,7 @@ def test_all():
     test_leagues_by_team()
     test_league_entries_by_team()
     test_challenger()
-    test_master()
+    test_main()
 
 
 def test_leagues_by_summoner():
@@ -32,5 +32,5 @@ def test_challenger():
     int_test_handler.test_result(baseriotapi.get_challenger("RANKED_SOLO_5x5"))
 
 
-def test_master():
-    int_test_handler.test_result(baseriotapi.get_master("RANKED_SOLO_5x5"))
+def test_main():
+    int_test_handler.test_result(baseriotapi.get_main("RANKED_SOLO_5x5"))

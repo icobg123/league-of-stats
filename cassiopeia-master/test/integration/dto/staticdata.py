@@ -11,8 +11,8 @@ def test_all():
     test_language_strings()
     test_languages()
     test_maps()
-    test_mastery()
-    test_masteries()
+    test_mainy()
+    test_mainies()
     test_realm()
     test_rune()
     test_runes()
@@ -49,12 +49,12 @@ def test_maps():
     int_test_handler.test_result(baseriotapi.get_maps())
 
 
-def test_mastery():
-    int_test_handler.test_result(baseriotapi.get_mastery(int_test_handler.mastery_id))
+def test_mainy():
+    int_test_handler.test_result(baseriotapi.get_mainy(int_test_handler.mainy_id))
 
 
-def test_masteries():
-    int_test_handler.test_result(baseriotapi.get_masteries())
+def test_mainies():
+    int_test_handler.test_result(baseriotapi.get_mainies())
 
 
 def test_realm():

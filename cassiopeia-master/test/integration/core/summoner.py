@@ -8,7 +8,7 @@ def test_all():
     test_summoners_by_name()
     test_summoner_by_id()
     test_summoners_by_id()
-    test_mastery_pages()
+    test_mainy_pages()
     test_summoner_name()
     test_summoner_names()
     test_rune_pages()
@@ -30,8 +30,8 @@ def test_summoners_by_id():
     int_test_handler.test_result(riotapi.get_summoners_by_id([int_test_handler.summoner_id]))
 
 
-def test_mastery_pages():
-    int_test_handler.test_result(riotapi.get_mastery_pages(riotapi.get_summoner_by_id(int_test_handler.summoner_id)))
+def test_mainy_pages():
+    int_test_handler.test_result(riotapi.get_mainy_pages(riotapi.get_summoner_by_id(int_test_handler.summoner_id)))
 
 
 def test_summoner_name():

@@ -667,7 +667,7 @@ def show_log_usage(server, datadir, options):
 
     Display binary log file information if binlog turned on if log_type =
     'binary log' (default) or show relay log file information is server is
-    a slave and relay log is engaged.
+    a subordinate and relay log is engaged.
 
     server[in]        Connected server to operate against
     datadir[in]       The datadir for the server
@@ -751,7 +751,7 @@ def show_log_usage(server, datadir, options):
             if res:
                 current_log = res[0][7]
             else:
-                print("# Server is not an active slave - no relay log "
+                print("# Server is not an active subordinate - no relay log "
                       "information.")
                 return True
         except:

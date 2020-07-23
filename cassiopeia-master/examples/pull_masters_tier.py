@@ -1,6 +1,6 @@
 """
 This example starts by getting the summoner information for every summoner in the
-Masters tier. It then goes through those summoners, pulls their matchlist (getting
+Mains tier. It then goes through those summoners, pulls their matchlist (getting
 all matches after patch 5.14 started), and then goes through their matchlist and
 pulls every game.
 
@@ -32,11 +32,11 @@ def main():
     db = SQLAlchemyDB("mysql+mysqlconnector", "databse_hostname", "database_name", "username", "password")
     riotapi.set_data_store(db)
 
-    master = [entry.summoner for entry in riotapi.get_master()]
-    print("Pulled Master tier. Got {0} summoners.".format(len(master)))
+    main = [entry.summoner for entry in riotapi.get_main()]
+    print("Pulled Main tier. Got {0} summoners.".format(len(main)))
 
     gather_start = datetime(2015, 7, 23)  # 1 day after patch 5.14
-    for summoner in master:
+    for summoner in main:
         for match in summoner.match_list(begin_time=gather_start):
             # If you are connected to a database, the match will automatically be stored in it without you having to do anything.
             # Simply pull the match, and it's in your database for whenever you need it again!

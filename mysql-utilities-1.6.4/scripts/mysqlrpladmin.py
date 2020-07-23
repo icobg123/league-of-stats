@@ -17,8 +17,8 @@
 #
 
 """
-This file contains the replication slave administration utility. It is used to
-perform replication operations on one or more slaves.
+This file contains the replication subordinate administration utility. It is used to
+perform replication operations on one or more subordinates.
 """
 
 from mysql.utilities.common.tools import check_python_version
@@ -70,7 +70,7 @@ class MyParser(UtilitiesParser):
 # Constants
 NAME = "MySQL Utilities - mysqlrpladmin "
 DESCRIPTION = "mysqlrpladmin - administration utility for MySQL replication"
-USAGE = "%prog --slaves=root@localhost:3306 <command>"
+USAGE = "%prog --subordinates=root@localhost:3306 <command>"
 _DATE_FORMAT = '%Y-%m-%d %H:%M:%S %p'
 
 # Check for connector/python
@@ -102,12 +102,12 @@ if __name__ == '__main__':
     # Setup utility-specific options:
     add_failover_options(parser)
 
-    # Connection information for the master
+    # Connection information for the main
     # Connect information for candidate server for switchover
-    parser.add_option("--new-master", action="store", dest="new_master",
+    parser.add_option("--new-main", action="store", dest="new_main",
                       default=None, type="string",
-                      help="connection information for the slave to be used to"
-                           " replace the master for switchover, in the form: "
+                      help="connection information for the subordinate to be used to"
+                           " replace the main for switchover, in the form: "
                            "<user>[:<password>]@<host>[:<port>][:<socket>] or "
                            "<login-path>[:<port>][:<socket>] or "
                            "<config-path>[<[group]>]. Valid only with "
@@ -117,15 +117,15 @@ if __name__ == '__main__':
     parser.add_option("--force", action="store_true", dest="force",
                       help="ignore prerequisite check results or some "
                            "inconsistencies found (e.g. errant transactions "
-                           "on slaves) and execute action")
+                           "on subordinates) and execute action")
 
     # Output format
     add_format_option(parser, "display the output in either grid (default), "
                       "tab, csv, or vertical format", None)
 
     # Add demote option
-    parser.add_option("--demote-master", action="store_true", dest="demote",
-                      help="make master a slave after switchover.")
+    parser.add_option("--demote-main", action="store_true", dest="demote",
+                      help="make main a subordinate after switchover.")
 
     # Add no-health option
     parser.add_option("--no-health", action="store_true", dest="no_health",
@@ -155,20 +155,20 @@ if __name__ == '__main__':
 
     command = args[0].lower()
 
-    # At least one of the options --discover-slaves-login or --slaves is
+    # At least one of the options --discover-subordinates-login or --subordinates is
     # required unless we are doing a health command.
-    if not opt.discover and not opt.slaves and not command == 'health':
+    if not opt.discover and not opt.subordinates and not command == 'health':
         parser.error(PARSE_ERR_SLAVE_DISCO_REQ)
 
-    # --discover-slaves-login and --slaves cannot be used simultaneously
+    # --discover-subordinates-login and --subordinates cannot be used simultaneously
     # (only one)
-    if opt.discover and opt.slaves:
+    if opt.discover and opt.subordinates:
         parser.error(PARSE_ERR_OPTS_EXCLD.format(
-            opt1='--discover-slaves-login', opt2='--slaves'
+            opt1='--discover-subordinates-login', opt2='--subordinates'
         ))
 
-    # Check slaves list
-    check_server_lists(parser, opt.master, opt.slaves)
+    # Check subordinates list
+    check_server_lists(parser, opt.main, opt.subordinates)
 
     # The value for --timeout needs to be an integer > 0.
     try:
@@ -183,45 +183,45 @@ if __name__ == '__main__':
     if command not in get_valid_rpl_commands():
         parser.error("'{0}' is not a valid command.".format(command))
 
-    # --master and --new-master options are required by 'switchover'
-    if command == 'switchover' and (not opt.new_master or not opt.master):
-        req_opts = '--master and --new-master'
+    # --main and --new-main options are required by 'switchover'
+    if command == 'switchover' and (not opt.new_main or not opt.main):
+        req_opts = '--main and --new-main'
         parser.error(PARSE_ERR_OPTS_REQ_BY_CMD.format(cmd=command,
                                                       opts=req_opts))
 
-    # Allow health report for --master or --slaves
-    if command == 'health' and not opt.master and not opt.slaves:
-        req_opts = '--master or --slaves'
+    # Allow health report for --main or --subordinates
+    if command == 'health' and not opt.main and not opt.subordinates:
+        req_opts = '--main or --subordinates'
         parser.error(PARSE_ERR_OPTS_REQ_BY_CMD.format(cmd=command,
                                                       opts=req_opts))
 
-    # --master and either --slaves or --discover-slaves-login options are
+    # --main and either --subordinates or --discover-subordinates-login options are
     # required by 'elect' and 'gtid'
-    if (command in ['elect', 'gtid'] and not opt.master and
-            (not opt.slaves or not opt.discover)):
-        req_opts = '--master and either --slaves or --discover-slaves-login'
+    if (command in ['elect', 'gtid'] and not opt.main and
+            (not opt.subordinates or not opt.discover)):
+        req_opts = '--main and either --subordinates or --discover-subordinates-login'
         parser.error(PARSE_ERR_OPTS_REQ_BY_CMD.format(cmd=command,
                                                       opts=req_opts))
 
-    # --slaves options are required by 'start', 'stop' and 'reset'
-    # --master is optional
-    if command in ['start', 'stop', 'reset'] and not opt.slaves:
-        req_opts = '--slaves'
+    # --subordinates options are required by 'start', 'stop' and 'reset'
+    # --main is optional
+    if command in ['start', 'stop', 'reset'] and not opt.subordinates:
+        req_opts = '--subordinates'
         parser.error(PARSE_ERR_OPTS_REQ_BY_CMD.format(cmd=command,
                                                       opts=req_opts))
 
     # Validate the required options for the failover command
     if command == 'failover':
-        # --discover-slaves-login is invalid (as it will require a master)
-        # instead --slaves needs to be used.
+        # --discover-subordinates-login is invalid (as it will require a main)
+        # instead --subordinates needs to be used.
         if opt.discover:
-            invalid_opt = '--discover-slaves-login'
+            invalid_opt = '--discover-subordinates-login'
             parser.error(PARSE_ERR_OPT_INVALID_CMD_TIP.format(
-                opt=invalid_opt, cmd=command, opt_tip='--slaves'))
-        # --master will be ignored
-        if opt.master:
-            print(WARN_OPT_NOT_REQUIRED.format(opt='--master', cmd=command))
-            opt.master = None
+                opt=invalid_opt, cmd=command, opt_tip='--subordinates'))
+        # --main will be ignored
+        if opt.main:
+            print(WARN_OPT_NOT_REQUIRED.format(opt='--main', cmd=command))
+            opt.main = None
 
     # --ping only used by 'health' command
     if opt.ping and not command == 'health':
@@ -245,12 +245,12 @@ if __name__ == '__main__':
                                                     only_cmd=only_used_cmds))
         opt.exec_before = None
 
-    # --new-master only required for 'switchover' command
-    if opt.new_master and command != 'switchover':
-        print(WARN_OPT_NOT_REQUIRED_ONLY_FOR.format(opt='--new-master',
+    # --new-main only required for 'switchover' command
+    if opt.new_main and command != 'switchover':
+        print(WARN_OPT_NOT_REQUIRED_ONLY_FOR.format(opt='--new-main',
                                                     cmd=command,
                                                     only_cmd='switchover'))
-        opt.new_master = None
+        opt.new_main = None
 
     # --candidates only used by 'failover' or 'elect' command
     if opt.candidates and command not in ['elect', 'failover']:
@@ -268,24 +268,24 @@ if __name__ == '__main__':
                                                     only_cmd=only_used_cmds))
         opt.format = None
 
-    # Parse the --new-master connection string
-    if opt.new_master:
+    # Parse the --new-main connection string
+    if opt.new_main:
         try:
-            new_master_val = parse_connection(opt.new_master, None, opt)
+            new_main_val = parse_connection(opt.new_main, None, opt)
         except FormatError:
             _, err, _ = sys.exc_info()
-            parser.error("New master connection values invalid: "
+            parser.error("New main connection values invalid: "
                          "{0}.".format(err))
         except UtilError:
             _, err, _ = sys.exc_info()
-            parser.error("New master connection values invalid: "
+            parser.error("New main connection values invalid: "
                          "{0}.".format(err.errmsg))
     else:
-        new_master_val = None
+        new_main_val = None
 
-    # Parse the master, slaves, and candidates connection parameters
+    # Parse the main, subordinates, and candidates connection parameters
     try:
-        master_val, slaves_val, candidates_val = parse_topology_connections(
+        main_val, subordinates_val, candidates_val = parse_topology_connections(
             opt)
     except UtilRplError:
         _, e, _ = sys.exc_info()
@@ -293,42 +293,42 @@ if __name__ == '__main__':
         sys.exit(1)
 
     # Check hostname alias
-    if new_master_val:
-        if check_hostname_alias(master_val, new_master_val):
-            master = Server({'conn_info': master_val})
-            new_master = Server({'conn_info': new_master_val})
+    if new_main_val:
+        if check_hostname_alias(main_val, new_main_val):
+            main = Server({'conn_info': main_val})
+            new_main = Server({'conn_info': new_main_val})
             parser.error(ERROR_SAME_MASTER.format(
-                n_master_host=new_master.host,
-                n_master_port=new_master.port,
-                master_host=master.host,
-                master_port=master.port))
+                n_main_host=new_main.host,
+                n_main_port=new_main.port,
+                main_host=main.host,
+                main_port=main.port))
 
-    if master_val:
-        for slave_val in slaves_val:
-            if check_hostname_alias(master_val, slave_val):
-                master = Server({'conn_info': master_val})
-                slave = Server({'conn_info': slave_val})
-                msg = ERROR_MASTER_IN_SLAVES.format(master_host=master.host,
-                                                    master_port=master.port,
-                                                    slaves_candidates=SLAVES,
-                                                    slave_host=slave.host,
-                                                    slave_port=slave.port)
+    if main_val:
+        for subordinate_val in subordinates_val:
+            if check_hostname_alias(main_val, subordinate_val):
+                main = Server({'conn_info': main_val})
+                subordinate = Server({'conn_info': subordinate_val})
+                msg = ERROR_MASTER_IN_SLAVES.format(main_host=main.host,
+                                                    main_port=main.port,
+                                                    subordinates_candidates=SLAVES,
+                                                    subordinate_host=subordinate.host,
+                                                    subordinate_port=subordinate.port)
                 parser.error(msg)
         for cand_val in candidates_val:
-            if check_hostname_alias(master_val, cand_val):
-                master = Server({'conn_info': master_val})
+            if check_hostname_alias(main_val, cand_val):
+                main = Server({'conn_info': main_val})
                 candidate = Server({'conn_info': cand_val})
                 msg = ERROR_MASTER_IN_SLAVES.format(
-                    master_host=master.host,
-                    master_port=master.port,
-                    slaves_candidates=CANDIDATES,
-                    slave_host=candidate.host,
-                    slave_port=candidate.port)
+                    main_host=main.host,
+                    main_port=main.port,
+                    subordinates_candidates=CANDIDATES,
+                    subordinate_host=candidate.host,
+                    subordinate_port=candidate.port)
                 parser.error(msg)
 
     # Create dictionary of options
     options = {
-        'new_master': new_master_val,
+        'new_main': new_main_val,
         'candidates': candidates_val,
         'ping': 3 if opt.ping is None else opt.ping,
         'format': opt.format,
@@ -386,7 +386,7 @@ if __name__ == '__main__':
                                                   version=VERSION_STRING))
 
     try:
-        rpl_cmds = RplCommands(master_val, slaves_val, options)
+        rpl_cmds = RplCommands(main_val, subordinates_val, options)
         rpl_cmds.execute_command(command, options)
     except UtilError:
         _, e, _ = sys.exc_info()

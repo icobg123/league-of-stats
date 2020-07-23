@@ -5,36 +5,36 @@ import cassiopeia.type.core.common
 import cassiopeia.type.core.summoner
 
 
-def __get_mastery_pages_by_id(ids):
-    pages = cassiopeia.core.requests.call_with_ensured_size(cassiopeia.dto.summonerapi.get_summoner_masteries, 40, ids)
+def __get_mainy_pages_by_id(ids):
+    pages = cassiopeia.core.requests.call_with_ensured_size(cassiopeia.dto.summonerapi.get_summoner_mainies, 40, ids)
 
     # Load required data if loading policy is eager
     if cassiopeia.core.requests.load_policy is cassiopeia.type.core.common.LoadPolicy.eager:
-        mastery_ids = set()
+        mainy_ids = set()
         for page in pages.values():
-            mastery_ids |= page.mastery_ids
-        cassiopeia.riotapi.get_masteries() if mastery_ids else None
+            mainy_ids |= page.mainy_ids
+        cassiopeia.riotapi.get_mainies() if mainy_ids else None
 
     if not isinstance(ids, list):
-        return [cassiopeia.type.core.summoner.MasteryPage(page) for page in pages[str(ids)].pages]
+        return [cassiopeia.type.core.summoner.MainyPage(page) for page in pages[str(ids)].pages]
     else:
-        return [[cassiopeia.type.core.summoner.MasteryPage(page) for page in pages[str(id_)].pages] for id_ in ids]
+        return [[cassiopeia.type.core.summoner.MainyPage(page) for page in pages[str(id_)].pages] for id_ in ids]
 
 
-def get_mastery_pages(summoners):
+def get_mainy_pages(summoners):
     """
-    Get the mastery pages for (a) summoner(s).
+    Get the mainy pages for (a) summoner(s).
 
     Args:
-        ids (Summoner | list<Summoner>): the summoner(s) to get mastery pages for
+        ids (Summoner | list<Summoner>): the summoner(s) to get mainy pages for
 
     Returns:
-        list<MasteryPage> | list<list<MasteryPage>>: the requested summoner(s)' mastery pages
+        list<MainyPage> | list<list<MainyPage>>: the requested summoner(s)' mainy pages
     """
     if isinstance(summoners, list):
-        return __get_mastery_pages_by_id([summoner.id for summoner in summoners])
+        return __get_mainy_pages_by_id([summoner.id for summoner in summoners])
     else:
-        return __get_mastery_pages_by_id(summoners.id)
+        return __get_mainy_pages_by_id(summoners.id)
 
 
 def __get_rune_pages_by_id(ids):

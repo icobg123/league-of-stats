@@ -131,7 +131,7 @@ class LoadPolicy(enum.Enum):
     eager = "EAGER"
 
 
-class MasteryType(enum.Enum):
+class MainyType(enum.Enum):
     ferocity = "Ferocity"
     resolve = "Resolve"
     cunning = "Cunning"
@@ -284,7 +284,7 @@ ranked_queues = {Queue.ranked_solo, Queue.ranked_threes, Queue.ranked_fives, Que
 
 class Tier(enum.Enum):
     challenger = "CHALLENGER"
-    master = "MASTER"
+    main = "MASTER"
     diamond = "DIAMOND"
     platinum = "PLATINUM"
     gold = "GOLD"

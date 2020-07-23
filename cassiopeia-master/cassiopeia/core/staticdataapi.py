@@ -210,61 +210,61 @@ def get_map_information():
     return [cassiopeia.type.core.staticdata.MapDetails(map_[1]) for map_ in cassiopeia.dto.staticdataapi.get_maps().data.items()]
 
 
-def get_mastery(id_):
+def get_mainy(id_):
     """
-    Gets a mastery
+    Gets a mainy
 
     Args:
-        id_ (int): the ID of the mastery to get
+        id_ (int): the ID of the mainy to get
 
     Returns:
-        Mastery: the mastery
+        Mainy: the mainy
     """
-    mastery = cassiopeia.core.requests.data_store.get(cassiopeia.type.core.staticdata.Mastery, id_, "id")
-    if mastery:
-        return mastery
+    mainy = cassiopeia.core.requests.data_store.get(cassiopeia.type.core.staticdata.Mainy, id_, "id")
+    if mainy:
+        return mainy
 
-    mastery = cassiopeia.dto.staticdataapi.get_mastery(id_)
+    mainy = cassiopeia.dto.staticdataapi.get_mainy(id_)
 
     # Load required data if loading policy is eager
     if cassiopeia.core.requests.load_policy is cassiopeia.type.core.common.LoadPolicy.eager:
-        cassiopeia.riotapi.get_masteries() if mastery.mastery_ids else None
+        cassiopeia.riotapi.get_mainies() if mainy.mainy_ids else None
 
-    mastery = cassiopeia.type.core.staticdata.Mastery(mastery)
+    mainy = cassiopeia.type.core.staticdata.Mainy(mainy)
 
-    cassiopeia.core.requests.data_store.store(mastery, id_)
-    return mastery
+    cassiopeia.core.requests.data_store.store(mainy, id_)
+    return mainy
 
 
-def get_masteries(ids=None):
+def get_mainies(ids=None):
     """
-    Gets a bunch of masteries (or all of them)
+    Gets a bunch of mainies (or all of them)
 
     Args:
-        ids (list<int>): the IDs of the masteries to get (or None to get all masteries) (default None)
+        ids (list<int>): the IDs of the mainies to get (or None to get all mainies) (default None)
 
     Returns:
-        list<Mastery>: the masteries
+        list<Mainy>: the mainies
     """
     if ids is not None:
-        masteries = {mastery.id: mastery for mastery in get_masteries()}
+        mainies = {mainy.id: mainy for mainy in get_mainies()}
         results = []
         for id_ in ids:
             try:
-                mastery = masteries[id_]
+                mainy = mainies[id_]
             except KeyError:
-                mastery = None
-            results.append(mastery)
+                mainy = None
+            results.append(mainy)
         return results
     else:
-        if cassiopeia.core.requests.data_store.has_all(cassiopeia.type.core.staticdata.Mastery):
-            return cassiopeia.core.requests.data_store.get_all(cassiopeia.type.core.staticdata.Mastery)
+        if cassiopeia.core.requests.data_store.has_all(cassiopeia.type.core.staticdata.Mainy):
+            return cassiopeia.core.requests.data_store.get_all(cassiopeia.type.core.staticdata.Mainy)
 
-        masteries = cassiopeia.dto.staticdataapi.get_masteries()
-        masteries = [cassiopeia.type.core.staticdata.Mastery(mastery[1]) for mastery in masteries.data.items()]
+        mainies = cassiopeia.dto.staticdataapi.get_mainies()
+        mainies = [cassiopeia.type.core.staticdata.Mainy(mainy[1]) for mainy in mainies.data.items()]
 
-        cassiopeia.core.requests.data_store.store(masteries, [mastery.id for mastery in masteries], [cassiopeia.type.core.staticdata.Mastery])
-        return masteries
+        cassiopeia.core.requests.data_store.store(mainies, [mainy.id for mainy in mainies], [cassiopeia.type.core.staticdata.Mainy])
+        return mainies
 
 
 def get_realm():

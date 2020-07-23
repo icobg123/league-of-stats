@@ -18,7 +18,7 @@
 
 """
 This file contains the replication synchronization checker utility. It is used
-to check the data consistency between master and slaves (and synchronize the
+to check the data consistency between main and subordinates (and synchronize the
 data if requested by the user).
 """
 
@@ -37,9 +37,9 @@ from mysql.utilities.common.messages import (
     PARSE_ERR_OPT_REQ_VALUE, PARSE_ERR_OPTS_EXCLD,
     PARSE_ERR_SLAVE_DISCO_REQ
 )
-from mysql.utilities.common.options import (add_discover_slaves_option,
-                                            add_master_option,
-                                            add_slaves_option,
+from mysql.utilities.common.options import (add_discover_subordinates_option,
+                                            add_main_option,
+                                            add_subordinates_option,
                                             add_ssl_options, add_verbosity,
                                             check_server_lists,
                                             db_objects_list_to_dictionary,
@@ -58,26 +58,26 @@ if not check_connector_python():
 # Constants
 NAME = "MySQL Utilities - mysqlrplsync"
 DESCRIPTION = "mysqlrplsync - replication synchronization checker utility"
-USAGE = ("%prog --master=user:pass@host:port --slaves=user:pass@host:port \\\n"
+USAGE = ("%prog --main=user:pass@host:port --subordinates=user:pass@host:port \\\n"
          "                    [<db_name>[.<tbl_name>]]")
 EXTENDED_HELP = """
 Introduction
 ------------
 The mysqlrplsync utility is designed to check if replication servers with
 GTIDs enabled are synchronized. In other words, it checks the data consistency
-between a master and a slave or between two slaves.
+between a main and a subordinate or between two subordinates.
 
 The utility permits you to run the check while replication is active. The
 synchronization algorithm is applied using GTID information to identify those
 transactions that differ (missing, not read, etc.) between the servers. During
-the process, the utility waits for the slave to catch up to the master to
+the process, the utility waits for the subordinate to catch up to the main to
 ensure all GTIDs have been read prior to performing the data consistency
 check.
 
-Note: if replication is not running (e.g., all slaves are stopped), the
-utility can still perform the check, but the step to wait for the slave to
-catch up to the master will be skipped. If you want to run the utility on a
-stopped replication topology, you should ensure the slaves are up to date
+Note: if replication is not running (e.g., all subordinates are stopped), the
+utility can still perform the check, but the step to wait for the subordinate to
+catch up to the main will be skipped. If you want to run the utility on a
+stopped replication topology, you should ensure the subordinates are up to date
 first.
 
 By default, all data is included in the comparison. To check specific
@@ -85,35 +85,35 @@ databases or tables, list each element as a separated argument for the
 utility using full qualified names as shown in the following examples.
 
   # Check the data consistency of a replication topology, explicitly
-  # specifying the master and slaves.
+  # specifying the main and subordinates.
 
-  $ mysqlrplsync --master=root:pass@host1:3306 \\
-                 --slaves=rpl:pass@host2:3306,rpl:pass@host3:3306
+  $ mysqlrplsync --main=root:pass@host1:3306 \\
+                 --subordinates=rpl:pass@host2:3306,rpl:pass@host3:3306
 
   # Check the data consistency of a replication topology, specifying the
-  # master and using the slaves discovery feature.
+  # main and using the subordinates discovery feature.
 
-  $ mysqlrplsync --master=root:pass@host1:3306 \\
-                 --discover-slaves-login=rpl:pass
+  $ mysqlrplsync --main=root:pass@host1:3306 \\
+                 --discover-subordinates-login=rpl:pass
 
-  # Check the data consistency only between specific slaves (no check
-  # performed on the master).
+  # Check the data consistency only between specific subordinates (no check
+  # performed on the main).
 
-  $ mysqlrplsync --slaves=rpl:pass@host2:3306,rpl:pass@host3:3306
+  $ mysqlrplsync --subordinates=rpl:pass@host2:3306,rpl:pass@host3:3306
 
   # Check the data consistency of a specific database (db1) and table
-  # (db2.t1), explicitly specifying master and slaves.
+  # (db2.t1), explicitly specifying main and subordinates.
 
-  $ mysqlrplsync --master=root:pass@host1:3306 \\
-                 --slaves=rpl:pass@host2:3306,rpl:pass@host3:3306 \\
+  $ mysqlrplsync --main=root:pass@host1:3306 \\
+                 --subordinates=rpl:pass@host2:3306,rpl:pass@host3:3306 \\
                  db1 db2.t1
 
   # Check the data consistency of all data excluding a specific database
-  # (db2) and table (db1.t2), specifying the master and using slave
+  # (db2) and table (db1.t2), specifying the main and using subordinate
   # discovery.
 
-  $ mysqlrplsync --master=root:pass@host1:3306 \\
-                 --discover-slaves-login=rpl:pass --exclude=db2,db1.t2
+  $ mysqlrplsync --main=root:pass@host1:3306 \\
+                 --discover-subordinates-login=rpl:pass --exclude=db2,db1.t2
 
 
 Helpful Hints
@@ -121,11 +121,11 @@ Helpful Hints
   - The default timeout for performing the table checksum is 5 seconds.
     This value can be changed with the --checksum-timeout option.
 
-  - The default timeout for waiting for slaves to catch up is 300 seconds.
+  - The default timeout for waiting for subordinates to catch up is 300 seconds.
     This value can be changed with the --rpl-timeout option.
 
-  - The default interval to periodically verify if a slave has read all of
-    the GTIDs from the master is 3 seconds. This value can be changed
+  - The default interval to periodically verify if a subordinate has read all of
+    the GTIDs from the main is 3 seconds. This value can be changed
     with the --interval option.
 
 """
@@ -136,14 +136,14 @@ if __name__ == '__main__':
                                   DESCRIPTION, USAGE, server=False,
                                   extended_help=EXTENDED_HELP)
 
-    # Add the --discover-slaves-login option.
-    add_discover_slaves_option(parser)
+    # Add the --discover-subordinates-login option.
+    add_discover_subordinates_option(parser)
 
-    # Add the --master option.
-    add_master_option(parser)
+    # Add the --main option.
+    add_main_option(parser)
 
-    # Add the --slaves option.
-    add_slaves_option(parser)
+    # Add the --subordinates option.
+    add_subordinates_option(parser)
 
     # Add the --ssl options
     add_ssl_options(parser)
@@ -155,8 +155,8 @@ if __name__ == '__main__':
     parser.add_option("--rpl-timeout", action="store", dest="rpl_timeout",
                       type="int", default=300,
                       help="maximum timeout in seconds to wait for "
-                           "synchronization (slave waiting to catch up to "
-                           "master). Default = 300.")
+                           "synchronization (subordinate waiting to catch up to "
+                           "main). Default = 300.")
     parser.add_option("--checksum-timeout", action="store",
                       dest="checksum_timeout", type="int", default=5,
                       help="maximum timeout in seconds to wait for CHECKSUM "
@@ -165,7 +165,7 @@ if __name__ == '__main__':
     # Add polling interval option.
     parser.add_option("--interval", "-i", action="store", dest="interval",
                       type="int", default="3", help="interval in seconds for "
-                      "polling slaves for sync status. Default = 3.")
+                      "polling subordinates for sync status. Default = 3.")
 
     # Add option to exclude databases/tables check.
     parser.add_option("--exclude", action="store", dest="exclude",
@@ -180,22 +180,22 @@ if __name__ == '__main__':
     # Check security settings
     check_password_security(opt, args)
 
-    # At least one of the options --discover-slaves-login or --slaves is
+    # At least one of the options --discover-subordinates-login or --subordinates is
     # required.
-    if not opt.discover and not opt.slaves:
+    if not opt.discover and not opt.subordinates:
         parser.error(PARSE_ERR_SLAVE_DISCO_REQ)
 
-    # The --discover-slaves-login and --slaves options cannot be used
+    # The --discover-subordinates-login and --subordinates options cannot be used
     # simultaneously (only one).
-    if opt.discover and opt.slaves:
+    if opt.discover and opt.subordinates:
         parser.error(PARSE_ERR_OPTS_EXCLD.format(
-            opt1='--discover-slaves-login', opt2='--slaves'
+            opt1='--discover-subordinates-login', opt2='--subordinates'
         ))
 
-    if opt.discover and not opt.master:
+    if opt.discover and not opt.main:
         parser.error(PARSE_ERR_OPT_REQ_OPT.format(
-            opt="--discover-slaves-login",
-            opts="--master"
+            opt="--discover-subordinates-login",
+            opts="--main"
         ))
 
     # Check timeout values, must be greater than zero.
@@ -215,13 +215,13 @@ if __name__ == '__main__':
         parser.error(PARSE_ERR_OPT_REQ_GREATER_VALUE.format(opt='--interval',
                                                             val='zero'))
 
-    # Check slaves list (master cannot be included in slaves list).
-    if opt.master:
-        check_server_lists(parser, opt.master, opt.slaves)
+    # Check subordinates list (main cannot be included in subordinates list).
+    if opt.main:
+        check_server_lists(parser, opt.main, opt.subordinates)
 
-    # Parse the master and slaves connection parameters (no candidates).
+    # Parse the main and subordinates connection parameters (no candidates).
     try:
-        master_val, slaves_val, _ = parse_topology_connections(
+        main_val, subordinates_val, _ = parse_topology_connections(
             opt, parse_candidates=False
         )
     except UtilRplError:
@@ -229,26 +229,26 @@ if __name__ == '__main__':
         sys.stderr.write("ERROR: {0}\n".format(err.errmsg))
         sys.exit(1)
 
-    # Check host aliases (master cannot be included in slaves list).
-    if master_val:
-        for slave_val in slaves_val:
-            if check_hostname_alias(master_val, slave_val):
-                master = Server({'conn_info': master_val})
-                slave = Server({'conn_info': slave_val})
+    # Check host aliases (main cannot be included in subordinates list).
+    if main_val:
+        for subordinate_val in subordinates_val:
+            if check_hostname_alias(main_val, subordinate_val):
+                main = Server({'conn_info': main_val})
+                subordinate = Server({'conn_info': subordinate_val})
                 parser.error(
-                    ERROR_MASTER_IN_SLAVES.format(master_host=master.host,
-                                                  master_port=master.port,
-                                                  slaves_candidates="slaves",
-                                                  slave_host=slave.host,
-                                                  slave_port=slave.port)
+                    ERROR_MASTER_IN_SLAVES.format(main_host=main.host,
+                                                  main_port=main.port,
+                                                  subordinates_candidates="subordinates",
+                                                  subordinate_host=subordinate.host,
+                                                  subordinate_port=subordinate.port)
                 )
-        # Get the sql_mode set in master
+        # Get the sql_mode set in main
         conn_opts = {
             'quiet': True,
             'version': "5.1.30",
         }
         try:
-            servers = connect_servers(master_val, None, conn_opts)
+            servers = connect_servers(main_val, None, conn_opts)
             sql_mode = servers[0].select_variable("SQL_MODE")
         except UtilError:
             sql_mode = ''
@@ -286,7 +286,7 @@ if __name__ == '__main__':
     # Create a replication synchronizer and check the topology's consistency.
     issues_found = 0
     try:
-        issues_found = check_data_consistency(master_val, slaves_val, options,
+        issues_found = check_data_consistency(main_val, subordinates_val, options,
                                               data_to_include, data_to_exclude)
     except UtilError:
         _, err, _ = sys.exc_info()

@@ -23,7 +23,7 @@ topology.
 from mysql.utilities.common.rpl_sync import RPLSynchronizer
 
 
-def check_data_consistency(master_cnx_val, slaves_cnx_val, options,
+def check_data_consistency(main_cnx_val, subordinates_cnx_val, options,
                            data_to_include=None, data_to_exclude=None,
                            check_srv_versions=True):
     """
@@ -32,10 +32,10 @@ def check_data_consistency(master_cnx_val, slaves_cnx_val, options,
     This function creates a replication synchronizer checker and checks the
     data consistency between the given list of servers.
 
-    master_cnx_val[in]      Dictionary with the connection values for the
-                            master.
-    slaves_cnx_val[in]      List of the dictionaries with the connection
-                            values for each slave.
+    main_cnx_val[in]      Dictionary with the connection values for the
+                            main.
+    subordinates_cnx_val[in]      List of the dictionaries with the connection
+                            values for each subordinate.
     options[in]             Dictionary of options (discover, verbosity,
                             rpl_timeout, checksum_timeout, interval).
     data_to_include[in]     Dictionary of data (set of tables) by database to
@@ -50,18 +50,18 @@ def check_data_consistency(master_cnx_val, slaves_cnx_val, options,
     Returns the number of issues found during the consistency check.
     """
     # Create replication synchronizer.
-    rpl_sync = RPLSynchronizer(master_cnx_val, slaves_cnx_val, options)
+    rpl_sync = RPLSynchronizer(main_cnx_val, subordinates_cnx_val, options)
     if check_srv_versions:
         # Check server versions and report differences.
         rpl_sync.check_server_versions()
-    # Check GTID support, skipping slave with GTID disabled, and report
-    # GTID executed differences between master and slaves.
+    # Check GTID support, skipping subordinate with GTID disabled, and report
+    # GTID executed differences between main and subordinates.
     rpl_sync.check_gtid_sync()
     # Check data consistency and return the number of issues found.
     return rpl_sync.check_data_sync(options, data_to_include, data_to_exclude)
 
 
-def check_server_versions(master_cnx_val, slaves_cnx_val, options):
+def check_server_versions(main_cnx_val, subordinates_cnx_val, options):
     """
     Check the server versions of a replication topology.
 
@@ -69,12 +69,12 @@ def check_server_versions(master_cnx_val, slaves_cnx_val, options):
     server versions of the given list of servers, reporting differences
     between them.
 
-    master_cnx_val[in]  Dictionary with the connection values for the master.
-    slaves_cnx_val[in]  List of the dictionaries with the connection values
-                        for each slave.
+    main_cnx_val[in]  Dictionary with the connection values for the main.
+    subordinates_cnx_val[in]  List of the dictionaries with the connection values
+                        for each subordinate.
     options[in]         Dictionary of options (discover, verbosity).
     """
     # Create replication synchronizer.
-    rpl_sync = RPLSynchronizer(master_cnx_val, slaves_cnx_val, options)
+    rpl_sync = RPLSynchronizer(main_cnx_val, subordinates_cnx_val, options)
     # Check server versions and report differences.
     rpl_sync.check_server_versions()

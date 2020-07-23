@@ -315,7 +315,7 @@ def _sa_bind_typesystem():
         return
 
     import cassiopeia.type.dto.champion
-    import cassiopeia.type.dto.championmastery
+    import cassiopeia.type.dto.championmainy
     import cassiopeia.type.dto.currentgame
     import cassiopeia.type.dto.featuredgames
     import cassiopeia.type.dto.game
@@ -329,7 +329,7 @@ def _sa_bind_typesystem():
     import cassiopeia.type.dto.team
     import cassiopeia.type.dto.tournament
     cassiopeia.type.dto.champion._sa_bind_all()
-    cassiopeia.type.dto.championmastery._sa_bind_all()
+    cassiopeia.type.dto.championmainy._sa_bind_all()
     cassiopeia.type.dto.currentgame._sa_bind_all()
     cassiopeia.type.dto.featuredgames._sa_bind_all()
     cassiopeia.type.dto.game._sa_bind_all()
@@ -344,7 +344,7 @@ def _sa_bind_typesystem():
     cassiopeia.type.dto.tournament._sa_bind_all()
 
     import cassiopeia.type.core.champion
-    import cassiopeia.type.core.championmastery
+    import cassiopeia.type.core.championmainy
     import cassiopeia.type.core.currentgame
     import cassiopeia.type.core.featuredgames
     import cassiopeia.type.core.game
@@ -358,7 +358,7 @@ def _sa_bind_typesystem():
     import cassiopeia.type.core.team
     import cassiopeia.type.core.tournament
     cassiopeia.type.core.champion._sa_rebind_all()
-    cassiopeia.type.core.championmastery._sa_rebind_all()
+    cassiopeia.type.core.championmainy._sa_rebind_all()
     cassiopeia.type.core.currentgame._sa_rebind_all()
     cassiopeia.type.core.featuredgames._sa_rebind_all()
     cassiopeia.type.core.game._sa_rebind_all()

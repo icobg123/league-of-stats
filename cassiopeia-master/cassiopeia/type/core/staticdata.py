@@ -1287,14 +1287,14 @@ class Champion(cassiopeia.type.core.common.CassiopeiaObject):
         return cassiopeia.riotapi.get_champion_status(self)
 
     @cassiopeia.type.core.common.immutablemethod
-    def mastery_level(self, summoner):
-        """Gets the ChampionMastery object for the specified summoner
+    def mainy_level(self, summoner):
+        """Gets the ChampionMainy object for the specified summoner
         Args:
-            summoner (Summoner): the summoner to get champion mastery for
+            summoner (Summoner): the summoner to get champion mainy for
         Returns:
             bool: well, we don't know what this one is. let us know if you figure it out.
         """
-        return cassiopeia.riotapi.get_champion_mastery(summoner, self)
+        return cassiopeia.riotapi.get_champion_mainy(summoner, self)
 
 
 ##################
@@ -2003,11 +2003,11 @@ class MapDetails(cassiopeia.type.core.common.CassiopeiaObject):
 
 
 #####################
-# Mastery Endpoints #
+# Mainy Endpoints #
 #####################
 @cassiopeia.type.core.common.inheritdocs
-class Mastery(cassiopeia.type.core.common.CassiopeiaObject):
-    dto_type = cassiopeia.type.dto.staticdata.Mastery
+class Mainy(cassiopeia.type.core.common.CassiopeiaObject):
+    dto_type = cassiopeia.type.dto.staticdata.Mainy
 
     def __str__(self):
         return self.name
@@ -2025,7 +2025,7 @@ class Mastery(cassiopeia.type.core.common.CassiopeiaObject):
     def descriptions(self):
         """
         Returns:
-            list<str>: descriptions of this mastery by rank
+            list<str>: descriptions of this mainy by rank
         """
         return self.data.description
 
@@ -2033,7 +2033,7 @@ class Mastery(cassiopeia.type.core.common.CassiopeiaObject):
     def id(self):
         """
         Returns:
-            int: the ID of this mastery
+            int: the ID of this mainy
         """
         return self.data.id
 
@@ -2041,7 +2041,7 @@ class Mastery(cassiopeia.type.core.common.CassiopeiaObject):
     def image(self):
         """
         Returns:
-            Image: the image of this mastery
+            Image: the image of this mainy
         """
         return Image(self.data.image) if self.data.image else None
 
@@ -2049,15 +2049,15 @@ class Mastery(cassiopeia.type.core.common.CassiopeiaObject):
     def tree(self):
         """
         Returns:
-            str: which mastery tree this mastery belongs to
+            str: which mainy tree this mainy belongs to
         """
-        return cassiopeia.type.core.common.MasteryType(self.data.masteryTree)
+        return cassiopeia.type.core.common.MainyType(self.data.mainyTree)
 
     @property
     def name(self):
         """
         Returns:
-            str: the name of this mastery
+            str: the name of this mainy
         """
         return self.data.name.strip()
 
@@ -2065,15 +2065,15 @@ class Mastery(cassiopeia.type.core.common.CassiopeiaObject):
     def prerequisite(self):
         """
         Returns:
-            Mastery: the prerequisite for this mastery
+            Mainy: the prerequisite for this mainy
         """
-        return cassiopeia.riotapi.get_mastery(int(self.data.prereq)) if int(self.data.prereq) else None
+        return cassiopeia.riotapi.get_mainy(int(self.data.prereq)) if int(self.data.prereq) else None
 
     @property
     def max_rank(self):
         """
         Returns:
-            int: the max rank for this mastery
+            int: the max rank for this mainy
         """
         return self.data.ranks
 
@@ -2081,7 +2081,7 @@ class Mastery(cassiopeia.type.core.common.CassiopeiaObject):
     def sanitized_descriptions(self):
         """
         Returns:
-            list<str>: sanitized descriptions of this mastery by rank
+            list<str>: sanitized descriptions of this mainy by rank
         """
         return self.data.sanitizedDescription
 
@@ -2532,7 +2532,7 @@ def _sa_rebind_all():
     ItemStats.dto_type = cassiopeia.type.dto.staticdata.BasicDataStats
     Item.dto_type = cassiopeia.type.dto.staticdata.Item
     MapDetails.dto_type = cassiopeia.type.dto.staticdata.MapDetails
-    Mastery.dto_type = cassiopeia.type.dto.staticdata.Mastery
+    Mainy.dto_type = cassiopeia.type.dto.staticdata.Mainy
     Realm.dto_type = cassiopeia.type.dto.staticdata.Realm
     Rune.dto_type = cassiopeia.type.dto.staticdata.Rune
     SummonerSpell.dto_type = cassiopeia.type.dto.staticdata.SummonerSpell

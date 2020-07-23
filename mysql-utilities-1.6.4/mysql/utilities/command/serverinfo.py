@@ -371,7 +371,7 @@ def _start_server(server_val, basedir, datadir, options=None):
     # It the server is 5.6 or later, we must use additional parameters
     if post_5_5:
         server_args = [
-            "--skip-slave-start",
+            "--skip-subordinate-start",
             "--default-storage-engine=MYISAM",
             "--server-id=0",
         ]

@@ -763,10 +763,10 @@ class MapData(cassiopeia.type.dto.common.CassiopeiaDto):
 
 
 #####################
-# Mastery Endpoints #
+# Mainy Endpoints #
 #####################
 @cassiopeia.type.core.common.inheritdocs
-class MasteryTreeItem(cassiopeia.type.dto.common.CassiopeiaDto):
+class MainyTreeItem(cassiopeia.type.dto.common.CassiopeiaDto):
     """
     Args:
         data (dict<str, str>): language str data
@@ -775,12 +775,12 @@ class MasteryTreeItem(cassiopeia.type.dto.common.CassiopeiaDto):
     """
 
     def __init__(self, dictionary):
-        self.masteryId = dictionary.get("masteryId", 0)
+        self.mainyId = dictionary.get("mainyId", 0)
         self.prereq = dictionary.get("prereq", "")
 
 
 @cassiopeia.type.core.common.inheritdocs
-class MasteryTreeList(cassiopeia.type.dto.common.CassiopeiaDto):
+class MainyTreeList(cassiopeia.type.dto.common.CassiopeiaDto):
     """
     Args:
         image (Image): image
@@ -790,11 +790,11 @@ class MasteryTreeList(cassiopeia.type.dto.common.CassiopeiaDto):
     """
 
     def __init__(self, dictionary):
-        self.masteryTreeItems = [(MasteryTreeItem(item) if not isinstance(item, MasteryTreeItem) else item) for item in dictionary.get("masteryTreeItems", []) if item]
+        self.mainyTreeItems = [(MainyTreeItem(item) if not isinstance(item, MainyTreeItem) else item) for item in dictionary.get("mainyTreeItems", []) if item]
 
 
 @cassiopeia.type.core.common.inheritdocs
-class MasteryTree(cassiopeia.type.dto.common.CassiopeiaDto):
+class MainyTree(cassiopeia.type.dto.common.CassiopeiaDto):
     """
     Args:
         data (dict<str, MapDetails>): map data
@@ -803,16 +803,16 @@ class MasteryTree(cassiopeia.type.dto.common.CassiopeiaDto):
     """
 
     def __init__(self, dictionary):
-        self.Cunning = [(MasteryTreeList(list_) if not isinstance(list_, MasteryTreeList) else list_) for list_ in dictionary.get("Cunning", []) if list_]
-        self.Ferocity = [(MasteryTreeList(list_) if not isinstance(list_, MasteryTreeList) else list_) for list_ in dictionary.get("Ferocity", []) if list_]
-        self.Resolve = [(MasteryTreeList(list_) if not isinstance(list_, MasteryTreeList) else list_) for list_ in dictionary.get("Resolve", []) if list_]
+        self.Cunning = [(MainyTreeList(list_) if not isinstance(list_, MainyTreeList) else list_) for list_ in dictionary.get("Cunning", []) if list_]
+        self.Ferocity = [(MainyTreeList(list_) if not isinstance(list_, MainyTreeList) else list_) for list_ in dictionary.get("Ferocity", []) if list_]
+        self.Resolve = [(MainyTreeList(list_) if not isinstance(list_, MainyTreeList) else list_) for list_ in dictionary.get("Resolve", []) if list_]
 
 
 @cassiopeia.type.core.common.inheritdocs
-class Mastery(cassiopeia.type.dto.common.CassiopeiaDto):
+class Mainy(cassiopeia.type.dto.common.CassiopeiaDto):
     """
     Args:
-        masteryId (int): mastery ID
+        mainyId (int): mainy ID
         prereq (str): prerequisites
     """
 
@@ -821,17 +821,17 @@ class Mastery(cassiopeia.type.dto.common.CassiopeiaDto):
         self.id = dictionary.get("id", 0)
         val = dictionary.get("image", None)
         self.image = Image(val) if val and not isinstance(val, Image) else val
-        self.masteryTree = dictionary.get("masteryTree", "")
+        self.mainyTree = dictionary.get("mainyTree", "")
         self.name = dictionary.get("name", "")
         self.prereq = dictionary.get("prereq", "")
         self.ranks = dictionary.get("ranks", 0)
         self.sanitizedDescription = dictionary.get("sanitizedDescription", [])
 
     @property
-    def mastery_ids(self):
+    def mainy_ids(self):
         """
         Args:
-            masteryTreeItems (list<MasteryTreeItem>): mastery tree items
+            mainyTreeItems (list<MainyTreeItem>): mainy tree items
         """
         ids = set()
         if self.prereq:
@@ -840,16 +840,16 @@ class Mastery(cassiopeia.type.dto.common.CassiopeiaDto):
 
 
 @cassiopeia.type.core.common.inheritdocs
-class MasteryList(cassiopeia.type.dto.common.CassiopeiaDto):
+class MainyList(cassiopeia.type.dto.common.CassiopeiaDto):
     """
     Args:
-        masteryTreeItems (list<MasteryTreeItem>): mastery tree items
+        mainyTreeItems (list<MainyTreeItem>): mainy tree items
     """
 
     def __init__(self, dictionary):
-        self.data = {id_: Mastery(mastery) if not isinstance(mastery, Mastery) else mastery for id_, mastery in dictionary.get("data", {}).items()}
+        self.data = {id_: Mainy(mainy) if not isinstance(mainy, Mainy) else mainy for id_, mainy in dictionary.get("data", {}).items()}
         val = dictionary.get("tree", None)
-        self.tree = MasteryTree(val) if val and not isinstance(val, MasteryTree) else val
+        self.tree = MainyTree(val) if val and not isinstance(val, MainyTree) else val
         self.type = dictionary.get("type", "")
         self.version = dictionary.get("version", "")
 
@@ -861,9 +861,9 @@ class MasteryList(cassiopeia.type.dto.common.CassiopeiaDto):
 class Realm(cassiopeia.type.dto.common.CassiopeiaDto):
     """
     Args:
-        Defense (list<MasteryTreeList>): defense tree
-        Offense (list<MasteryTreeList>): offense tree
-        Utility (list<MasteryTreeList>): utility tree
+        Defense (list<MainyTreeList>): defense tree
+        Offense (list<MainyTreeList>): offense tree
+        Utility (list<MainyTreeList>): utility tree
     """
 
     def __init__(self, dictionary):
@@ -888,7 +888,7 @@ class Rune(cassiopeia.type.dto.common.CassiopeiaDto):
         description (list<str>): description
         id (int): iD
         image (Image): image
-        masteryTree (str): legal values: Defense, Offense, Utility
+        mainyTree (str): legal values: Defense, Offense, Utility
         name (str): name
         prereq (str): prerequisites
         ranks (int): ranks
@@ -926,7 +926,7 @@ class Rune(cassiopeia.type.dto.common.CassiopeiaDto):
 @cassiopeia.type.core.common.inheritdocs
 class RuneList(cassiopeia.type.dto.common.CassiopeiaDto):
     """
-    Gets all other mastery IDs contained in this object
+    Gets all other mainy IDs contained in this object
     """
 
     def __init__(self, dictionary):
@@ -944,8 +944,8 @@ class RuneList(cassiopeia.type.dto.common.CassiopeiaDto):
 class SummonerSpell(cassiopeia.type.dto.common.CassiopeiaDto):
     """
     Args:
-        data (dict<str, Mastery>): mastery data
-        tree (MasteryTree): mastery tree
+        data (dict<str, Mainy>): mainy data
+        tree (MainyTree): mainy tree
         type (str): type
         version (str): version
     """
@@ -1137,7 +1137,7 @@ def _sa_bind_image():
         _champion_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("Champion.id", ondelete="CASCADE"))
         _item_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("Item.id", ondelete="CASCADE"))
         _map_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("MapDetails.mapId", ondelete="CASCADE"))
-        _mastery_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("Mastery.id", ondelete="CASCADE"))
+        _mainy_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("Mainy.id", ondelete="CASCADE"))
         _rune_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("Rune.id", ondelete="CASCADE"))
         _s_spell_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("SummonerSpell.id", ondelete="CASCADE"))
 
@@ -1373,16 +1373,16 @@ def _sa_bind_map_details():
         unpurchasableItemList = sqlalchemy.Column(cassiopeia.type.dto.common.JSONEncoded)
 
 
-def _sa_bind_mastery():
-    global Mastery
+def _sa_bind_mainy():
+    global Mainy
 
     @cassiopeia.type.core.common.inheritdocs
-    class Mastery(Mastery, cassiopeia.type.dto.common.BaseDB):
-        __tablename__ = "Mastery"
+    class Mainy(Mainy, cassiopeia.type.dto.common.BaseDB):
+        __tablename__ = "Mainy"
         description = sqlalchemy.Column(cassiopeia.type.dto.common.JSONEncoded)
         id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
         image = sqlalchemy.orm.relationship("cassiopeia.type.dto.staticdata.Image", uselist=False, cascade="all, delete-orphan", passive_deletes=True)
-        masteryTree = sqlalchemy.Column(sqlalchemy.String(30))
+        mainyTree = sqlalchemy.Column(sqlalchemy.String(30))
         name = sqlalchemy.Column(sqlalchemy.String(50))
         prereq = sqlalchemy.Column(sqlalchemy.String(30))
         ranks = sqlalchemy.Column(sqlalchemy.Integer)
@@ -1485,7 +1485,7 @@ def _sa_bind_all():
     _sa_bind_basic_data_stats()
     _sa_bind_item()
     _sa_bind_map_details()
-    _sa_bind_mastery()
+    _sa_bind_mainy()
     _sa_bind_realm()
     _sa_bind_rune()
     _sa_bind_summoner_spell()
