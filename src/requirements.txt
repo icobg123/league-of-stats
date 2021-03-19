@@ -6,7 +6,7 @@ Flask-SQLAlchemy==2.1
 future==0.15.2
 get==0.0.0
 itsdangerous==0.24
-Jinja2==2.8
+Jinja2==2.11.3
 MarkupSafe==0.23
 post==0.0.0
 public==0.0.0
